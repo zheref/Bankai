@@ -10,6 +10,9 @@
 		2B20E6121CF780120080E8CC /* Bankai.h in Headers */ = {isa = PBXBuildFile; fileRef = 2B20E6111CF780120080E8CC /* Bankai.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		2B20E6191CF780120080E8CC /* Bankai.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 2B20E60E1CF780120080E8CC /* Bankai.framework */; };
 		2B20E61E1CF780120080E8CC /* BankaiTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2B20E61D1CF780120080E8CC /* BankaiTests.swift */; };
+		2B20E6291CF7809C0080E8CC /* Bankai.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2B20E6281CF7809C0080E8CC /* Bankai.swift */; };
+		2B20E62C1CF781070080E8CC /* BKMeter.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2B20E62B1CF781070080E8CC /* BKMeter.swift */; };
+		2B20E62F1CF781BA0080E8CC /* BKMemcache.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2B20E62E1CF781BA0080E8CC /* BKMemcache.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -29,6 +32,9 @@
 		2B20E6181CF780120080E8CC /* BankaiTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = BankaiTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		2B20E61D1CF780120080E8CC /* BankaiTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BankaiTests.swift; sourceTree = "<group>"; };
 		2B20E61F1CF780120080E8CC /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
+		2B20E6281CF7809C0080E8CC /* Bankai.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Bankai.swift; sourceTree = "<group>"; };
+		2B20E62B1CF781070080E8CC /* BKMeter.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = BKMeter.swift; path = Meters/BKMeter.swift; sourceTree = "<group>"; };
+		2B20E62E1CF781BA0080E8CC /* BKMemcache.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = BKMemcache.swift; path = Storage/BKMemcache.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -73,6 +79,9 @@
 			children = (
 				2B20E6111CF780120080E8CC /* Bankai.h */,
 				2B20E6131CF780120080E8CC /* Info.plist */,
+				2B20E6281CF7809C0080E8CC /* Bankai.swift */,
+				2B20E62A1CF780DC0080E8CC /* Meters */,
+				2B20E62D1CF781780080E8CC /* Storage */,
 			);
 			path = Bankai;
 			sourceTree = "<group>";
@@ -84,6 +93,22 @@
 				2B20E61F1CF780120080E8CC /* Info.plist */,
 			);
 			path = BankaiTests;
+			sourceTree = "<group>";
+		};
+		2B20E62A1CF780DC0080E8CC /* Meters */ = {
+			isa = PBXGroup;
+			children = (
+				2B20E62B1CF781070080E8CC /* BKMeter.swift */,
+			);
+			name = Meters;
+			sourceTree = "<group>";
+		};
+		2B20E62D1CF781780080E8CC /* Storage */ = {
+			isa = PBXGroup;
+			children = (
+				2B20E62E1CF781BA0080E8CC /* BKMemcache.swift */,
+			);
+			name = Storage;
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */
@@ -194,6 +219,9 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				2B20E62C1CF781070080E8CC /* BKMeter.swift in Sources */,
+				2B20E62F1CF781BA0080E8CC /* BKMemcache.swift in Sources */,
+				2B20E6291CF7809C0080E8CC /* Bankai.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -310,6 +338,7 @@
 		2B20E6231CF780120080E8CC /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
+				CLANG_ENABLE_MODULES = YES;
 				DEFINES_MODULE = YES;
 				DYLIB_COMPATIBILITY_VERSION = 1;
 				DYLIB_CURRENT_VERSION = 1;
@@ -320,12 +349,14 @@
 				PRODUCT_BUNDLE_IDENTIFIER = io.zheref.Bankai;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SKIP_INSTALL = YES;
+				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
 			};
 			name = Debug;
 		};
 		2B20E6241CF780120080E8CC /* Release */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
+				CLANG_ENABLE_MODULES = YES;
 				DEFINES_MODULE = YES;
 				DYLIB_COMPATIBILITY_VERSION = 1;
 				DYLIB_CURRENT_VERSION = 1;
