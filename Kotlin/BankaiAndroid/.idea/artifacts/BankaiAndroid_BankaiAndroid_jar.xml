@@ -1,0 +1,12 @@
+<component name="ArtifactManager">
+  <artifact name="BankaiAndroid.BankaiAndroid:jar">
+    <output-path>$PROJECT_DIR$/build/classes/artifacts/BankaiAndroid_BankaiAndroid_jar</output-path>
+    <root id="root">
+      <element id="archive" name="BankaiAndroid.BankaiAndroid.jar">
+        <element id="directory" name="META-INF">
+          <element id="file-copy" path="$PROJECT_DIR$/artifact/META-INF/MANIFEST.MF" />
+        </element>
+      </element>
+    </root>
+  </artifact>
+</component>
