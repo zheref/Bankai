@@ -1,0 +1,15 @@
+<component name="ArtifactManager">
+  <artifact name="BankaiCore.main:jar">
+    <output-path>$PROJECT_DIR$/out/artifacts/BankaiCore_main_jar</output-path>
+    <root id="root">
+      <element id="archive" name="BankaiCore.main.jar">
+        <element id="directory" name="META-INF">
+          <element id="file-copy" path="$PROJECT_DIR$/artifact/META-INF/MANIFEST.MF" />
+        </element>
+        <element id="module-output" name="BankaiCore.main" />
+      </element>
+      <element id="library" level="project" name="Gradle: org.jetbrains:annotations:13.0" />
+      <element id="library" level="project" name="Gradle: org.jetbrains.kotlin:kotlin-stdlib:1.9.23" />
+    </root>
+  </artifact>
+</component>
