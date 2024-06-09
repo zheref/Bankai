@@ -15,4 +15,4 @@ dependencyResolutionManagement {
 
 rootProject.name = "BankaiAndroid"
 include(":app")
- 
+include(":BankaiAndroid")
