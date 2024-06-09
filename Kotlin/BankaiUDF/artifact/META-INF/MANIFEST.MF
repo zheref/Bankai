@@ -1,0 +1,5 @@
+Manifest-Version: 1.0
+Main-Class: 
+Class-Path: kotlin-stdlib-1.9.23.jar annotations-13.0.jar BankaiCore.mai
+ n.jar
+
