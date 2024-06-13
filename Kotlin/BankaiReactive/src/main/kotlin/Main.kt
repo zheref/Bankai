@@ -1,4 +1,4 @@
-package io.zheref.bankai.udf
+package io.zheref.bankai.reactive
 
 fun reactive() {
     println("Hello World!")
