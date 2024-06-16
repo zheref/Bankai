@@ -15,5 +15,3 @@ fun Int.secondsCounter(): Flow<Int> {
         yield()
     }
 }
-
-suspend fun Int.secondsCount() = this.secondsCounter()
