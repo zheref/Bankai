@@ -1,9 +1,6 @@
 package io.zheref.bankai.android.udf
 
-import androidx.compose.runtime.MutableState
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.setValue
+import androidx.compose.runtime.*
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import kotlinx.coroutines.*
@@ -19,18 +16,25 @@ data class Thunk<Action>(val identifier: String?, val start: Flow<Action>)
 abstract class Feature<State, Action>(initialState: State) : ViewModel() {
     abstract val reducer: Reducer<State, Action>
     // We keep feature state private so that it can only be changed by reducer
-    private val _state: MutableState<State> = mutableStateOf(initialState)
     private val _runningJobs: MutableMap<String, Job> = mutableMapOf()
+
+    var state = mutableStateOf(initialState)
+        private set
+
+    private var _state: State by state
 
     /**
      * Asynchronously sends an action to the reducer in order to update the feature state and trigger any associated thunks.
      *
      * @param action The action to be sent to the reducer.
      */
-    suspend fun send(action: Action) = coroutineScope {
+    suspend fun send(action: Action) {
         println("Received action: $action")
-        val (state, thunks) = reducer(_state.value, action)
-        _state.value = state
+        val (state, thunks) = reducer(_state, action)
+
+        viewModelScope.launch {
+            this@Feature._state = state
+        }
 
         println("Found ${thunks.size} thunks to start")
         thunks.forEach { start(it) }
@@ -40,8 +44,7 @@ abstract class Feature<State, Action>(initialState: State) : ViewModel() {
      * Inner class representing the store of a feature.
      */
     inner class Store() {
-        var state by _state
-            private set
+        var state = this@Feature.state
 
         fun dispatch(action: Action): () -> Unit = {
             runBlocking { send(action) }
