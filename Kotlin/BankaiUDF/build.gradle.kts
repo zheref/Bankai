@@ -11,6 +11,7 @@ repositories {
 
 dependencies {
     testImplementation("org.jetbrains.kotlin:kotlin-test")
+
     implementation(files("../BankaiCore/out/artifacts/BankaiCore_main_jar/BankaiCore.main.jar"))
 }
 

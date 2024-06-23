@@ -1,6 +1,8 @@
 package io.zheref.bankai.android.udf
 
-import androidx.compose.runtime.*
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.setValue
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import kotlinx.coroutines.*
@@ -12,32 +14,37 @@ import kotlinx.coroutines.flow.map
 typealias Reducer<State, Action> = (state: State, action: Action) -> Feature.Effect<State, Action>
 data class Thunk<Action>(val identifier: String?, val start: Flow<Action>)
 
-
 abstract class Feature<State, Action>(initialState: State) : ViewModel() {
     abstract val reducer: Reducer<State, Action>
     // We keep feature state private so that it can only be changed by reducer
     private val _runningJobs: MutableMap<String, Job> = mutableMapOf()
 
+    val runningJobs: Map<String, Job> = _runningJobs
+
+
+    /**
+     * The current state of the feature.
+     */
     var state = mutableStateOf(initialState)
         private set
-
     private var _state: State by state
 
     /**
-     * Asynchronously sends an action to the reducer in order to update the feature state and trigger any associated thunks.
+     * Asynchronously sends an action to the reducer in order to update the feature state and trigger any associated side effects represented as thunks.
      *
      * @param action The action to be sent to the reducer.
      */
-    suspend fun send(action: Action) {
+    suspend fun send(action: Action): Job {
         println("Received action: $action")
         val (state, thunks) = reducer(_state, action)
 
-        viewModelScope.launch {
+        val mutationJob = viewModelScope.launch {
             this@Feature._state = state
         }
 
         println("Found ${thunks.size} thunks to start")
         thunks.forEach { start(it) }
+        return mutationJob
     }
 
     /**
@@ -59,6 +66,14 @@ abstract class Feature<State, Action>(initialState: State) : ViewModel() {
         val thunks: List<Thunk<Action>> = emptyList()
     )
 
+    /**
+     * Starts a thunk by executing the provided [thunk]. The thunk is executed asynchronously and any actions emitted
+     * by the [thunk.start] flow are sent to the reducer and processed.
+     *
+     * If [thunk.identifier] is null, a random identifier is generated for the thunk.
+     *
+     * @param thunk The thunk to be started.
+     */
     private suspend fun start(thunk: Thunk<Action>) {
         val (id, start) = thunk
         val identifier = id ?: String.random()

@@ -2,7 +2,19 @@
 <project version="4">
   <component name="deploymentTargetDropDown">
     <value>
+      <entry key="FeatureTests">
+        <State />
+      </entry>
       <entry key="app">
+        <State />
+      </entry>
+      <entry key="testSend()">
+        <State />
+      </entry>
+      <entry key="testSend_withActionAndEffects()">
+        <State />
+      </entry>
+      <entry key="testSend_withActionAndNoEffects()">
         <State />
       </entry>
     </value>
