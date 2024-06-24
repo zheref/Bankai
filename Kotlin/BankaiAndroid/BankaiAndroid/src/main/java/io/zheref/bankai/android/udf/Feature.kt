@@ -11,8 +11,10 @@ import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.flow.flowOn
 import kotlinx.coroutines.flow.map
 
-typealias Reducer<State, Action> = (state: State, action: Action) -> Feature.Effect<State, Action>
-data class Thunk<Action>(val identifier: String?, val start: Flow<Action>)
+typealias Reducer<State, Action> = (state: State, action: Action) -> Feature.Reduction<State, Action>
+typealias Sender<Action> = suspend (action: Action) -> Job
+typealias IntentHandler = () -> Unit
+typealias Thunk<Action> = suspend (send: Sender<Action>) -> Unit
 
 abstract class Feature<State, Action>(initialState: State) : ViewModel() {
     abstract val reducer: Reducer<State, Action>
@@ -20,7 +22,6 @@ abstract class Feature<State, Action>(initialState: State) : ViewModel() {
     private val _runningJobs: MutableMap<String, Job> = mutableMapOf()
 
     val runningJobs: Map<String, Job> = _runningJobs
-
 
     /**
      * The current state of the feature.
@@ -30,20 +31,20 @@ abstract class Feature<State, Action>(initialState: State) : ViewModel() {
     private var _state: State by state
 
     /**
-     * Asynchronously sends an action to the reducer in order to update the feature state and trigger any associated side effects represented as thunks.
+     * Asynchronously sends an action to the reducer in order to update the feature state and trigger any associated side effects.
      *
      * @param action The action to be sent to the reducer.
      */
     suspend fun send(action: Action): Job {
         println("Received action: $action")
-        val (state, thunks) = reducer(_state, action)
+        val (state, effects) = reducer(_state, action)
 
         val mutationJob = viewModelScope.launch {
             this@Feature._state = state
         }
 
-        println("Found ${thunks.size} thunks to start")
-        thunks.forEach { start(it) }
+        println("Found ${effects.size} effects to start")
+        effects.forEach { start(it) }
         return mutationJob
     }
 
@@ -53,7 +54,7 @@ abstract class Feature<State, Action>(initialState: State) : ViewModel() {
     inner class Store() {
         var state = this@Feature.state
 
-        fun dispatch(action: Action): () -> Unit = {
+        fun dispatch(action: Action): IntentHandler = {
             runBlocking { send(action) }
         }
 
@@ -61,33 +62,63 @@ abstract class Feature<State, Action>(initialState: State) : ViewModel() {
         operator fun component2() = this::dispatch
     }
 
-    data class Effect<State, Action>(
+    data class Reduction<State, Action>(
         val state: State,
-        val thunks: List<Thunk<Action>> = emptyList()
+        val effects: List<Effect<Action>> = emptyList()
     )
 
+    data class Effect<out Action>(
+        val identifier: String = String.random(),
+        val start: Thunk<Action>
+    ) {
+        companion object {
+            fun <Action> fromFlow(identifier: String, flow: Flow<Action>): Effect<Action> {
+                return Effect(identifier = identifier, start = { send ->
+                    flow
+                        .flowOn(Dispatchers.Default)
+                        .map {
+                            println("Intercepted action: $it")
+                            it
+                        }
+                        // TODO: Handle exceptions
+                        // .catch { send(it) }
+                        .collect { send(it) }
+                })
+            }
+
+            fun <Action> fromSuspend(suspend: suspend () -> Action, identifier: String): Effect<Action> {
+                return Effect(identifier = identifier, start = { send ->
+                    coroutineScope {
+                        val futureAction = async { suspend() }
+                        send(futureAction.await())
+                    }
+                })
+            }
+
+            fun <Action> fireAndForget(fire: () -> Unit): Effect<Action> {
+                return Effect(start = {
+                    runBlocking {
+                        launch { fire() }
+                    }
+                })
+            }
+        }
+    }
+
     /**
-     * Starts a thunk by executing the provided [thunk]. The thunk is executed asynchronously and any actions emitted
+     * Starts an effect by executing the provided [effect]. The thunk is executed asynchronously and any actions emitted
      * by the [thunk.start] flow are sent to the reducer and processed.
      *
      * If [thunk.identifier] is null, a random identifier is generated for the thunk.
      *
      * @param thunk The thunk to be started.
      */
-    private suspend fun start(thunk: Thunk<Action>) {
-        val (id, start) = thunk
-        val identifier = id ?: String.random()
+    private suspend fun start(effect: Effect<Action>) {
+        val identifier = effect.identifier ?: String.random()
 
         println("Starting thunk with identifier: $identifier")
         val job = viewModelScope.launch {
-            start
-                .flowOn(Dispatchers.Default)
-                .map {
-                    println("Intercepted action: $it")
-                    it
-                }
-                .catch { terminate(identifier) }
-                .collect { send(it) }
+            effect.start(this@Feature::send)
         }
 
         _runningJobs[identifier] = job

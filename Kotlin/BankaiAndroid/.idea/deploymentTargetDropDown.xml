@@ -8,13 +8,16 @@
       <entry key="app">
         <State />
       </entry>
-      <entry key="testSend()">
-        <State />
-      </entry>
       <entry key="testSend_withActionAndEffects()">
         <State />
       </entry>
+      <entry key="testSend_withActionAndIndefiniteEffects()">
+        <State />
+      </entry>
       <entry key="testSend_withActionAndNoEffects()">
+        <State />
+      </entry>
+      <entry key="testSend_withActionAndSuspendEffect()">
         <State />
       </entry>
     </value>

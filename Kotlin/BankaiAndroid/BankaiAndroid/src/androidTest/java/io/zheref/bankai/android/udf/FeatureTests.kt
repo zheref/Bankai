@@ -2,6 +2,7 @@ package io.zheref.bankai.android.udf
 
 import io.zheref.bankai.android.MainDispatcherRule
 import kotlinx.coroutines.ExperimentalCoroutinesApi
+import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.joinAll
@@ -21,6 +22,7 @@ class MyFeature(initialState: MyFeature.State): Feature<MyFeature.State, MyFeatu
         data object Dismiss: Action()
         data class ChangeName(val name: String) : Action()
         data class DeployName(val name: String) : Action()
+        data object ListenForNames: Action()
     }
 
     override val reducer: Reducer<State, Action> = reducer@ { state, action ->
@@ -31,22 +33,37 @@ class MyFeature(initialState: MyFeature.State): Feature<MyFeature.State, MyFeatu
         return@reducer when (action) {
             is Action.Dismiss -> {
                 val newState = state.copy(name = "")
-                Effect(newState, emptyList())
+                Reduction(newState, emptyList())
             }
             is Action.ChangeName -> {
                 val newState = state.copy(name = action.name)
-                Effect(newState, emptyList())
+                Reduction(newState, emptyList())
             }
             is Action.DeployName -> {
-                val thunk = Thunk<Action>(
-                    identifier = "deploy:${action.name}",
-                    start = flow {
+                val effect = Effect.fromSuspend(
+                    {
                         delay(1000)
-                        emit(Action.ChangeName(action.name))
+                        return@fromSuspend Action.ChangeName(action.name)
+                    },
+                    "deploy:${action.name}",
+                )
+
+                Reduction(state, listOf(effect))
+            }
+            is Action.ListenForNames -> {
+                val effect = Effect.fromFlow(
+                    "listenForNames",
+                    flow {
+                        var itemIndex = 0
+                        while(itemIndex < 5) {
+                            delay(1000)
+                            itemIndex++
+                            emit(Action.ChangeName("RemoteName-$itemIndex"))
+                        }
                     }
                 )
 
-                Effect(state, listOf(thunk))
+                Reduction(state, listOf(effect))
             }
         }
     }
@@ -102,7 +119,7 @@ class FeatureTests {
 
     @OptIn(ExperimentalCoroutinesApi::class)
     @Test
-    fun testSend_withActionAndEffects() = runTest {
+    fun testSend_withActionAndSuspendEffect() = runTest {
         // Given
         val initialName = "Initial"
         val feature = MyFeature(
@@ -123,6 +140,35 @@ class FeatureTests {
         val updatedState2 = feature.state.value
         assertEquals(MyFeature.Action.ChangeName(newName), feature.calledReducerWithAction.last())
         assertEquals(updatedState2.name, newName)
+    }
+
+    @OptIn(ExperimentalCoroutinesApi::class)
+    @Test
+    fun testSend_withActionAndIndefiniteEffects() = runTest {
+        // Given
+        val initialName = "Initial"
+        val feature = MyFeature(
+            MyFeature.State(initialName)
+        )
+
+        // When
+        val job = feature.send(MyFeature.Action.ListenForNames)
+
+        // Then
+        job.join()
+        val updatedState1 = feature.state.value
+        assertEquals(MyFeature.Action.ListenForNames, feature.calledReducerWithAction.last())
+        assertEquals(updatedState1.name, initialName)
+
+        feature.runningJobs.values.joinAll()
+        val updatedState2 = feature.state.value
+        assertEquals(updatedState2.name, "RemoteName-5")
+        assertEquals(MyFeature.Action.ChangeName("RemoteName-5"), feature.calledReducerWithAction.removeLast())
+        assertEquals(MyFeature.Action.ChangeName("RemoteName-4"), feature.calledReducerWithAction.removeLast())
+        assertEquals(MyFeature.Action.ChangeName("RemoteName-3"), feature.calledReducerWithAction.removeLast())
+        assertEquals(MyFeature.Action.ChangeName("RemoteName-2"), feature.calledReducerWithAction.removeLast())
+        assertEquals(MyFeature.Action.ChangeName("RemoteName-1"), feature.calledReducerWithAction.removeLast())
+
     }
 
 }
