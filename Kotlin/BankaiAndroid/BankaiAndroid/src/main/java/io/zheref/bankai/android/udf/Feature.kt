@@ -1,19 +1,31 @@
 package io.zheref.bankai.android.udf
 
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.setValue
+import androidx.compose.runtime.*
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import kotlinx.coroutines.*
-import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.flow.catch
-import kotlinx.coroutines.flow.flowOn
-import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.flow.*
 
+public abstract class Result<T, E: Exception> {}
+public data class SuccessResult<T, E: Exception>(val value: T): Result<T, E>()
+public data class FailureResult<T, E: Exception>(val exception: E): Result<T, E>()
+
+// Void to void ONCE
+public typealias ZBlock = (Exception?) -> Unit
+public typealias ZJob = suspend () -> Unit
+
+// Void to 1 value
+public typealias ZFuture<T> = suspend () -> T
+
+// Void to 1..* values
+public typealias ZYielderOf<T, E> = ((Result<T, E>) -> Void) -> Void
+
+// Void to * values
+public typealias ZFlowOf<T> = Flow<T>
+
+// TODO: Remove Zs
 typealias Reducer<State, Action> = (state: State, action: Action) -> Feature.Reduction<State, Action>
 typealias Sender<Action> = suspend (action: Action) -> Job
-typealias IntentHandler = () -> Unit
 typealias Thunk<Action> = suspend (send: Sender<Action>) -> Unit
 
 abstract class Feature<State, Action>(initialState: State) : ViewModel() {
@@ -26,9 +38,8 @@ abstract class Feature<State, Action>(initialState: State) : ViewModel() {
     /**
      * The current state of the feature.
      */
-    var state = mutableStateOf(initialState)
-        private set
-    private var _state: State by state
+    private val _state = MutableStateFlow(initialState)
+    val state: StateFlow<State> = _state.asStateFlow()
 
     /**
      * Asynchronously sends an action to the reducer in order to update the feature state and trigger any associated side effects.
@@ -37,28 +48,28 @@ abstract class Feature<State, Action>(initialState: State) : ViewModel() {
      */
     suspend fun send(action: Action): Job {
         println("Received action: $action")
-        val (state, effects) = reducer(_state, action)
-
-        val mutationJob = viewModelScope.launch {
-            this@Feature._state = state
+        return viewModelScope.launch {
+            _state.update { currentState ->
+                val (newState, effects) = reducer(currentState, action)
+                println("Found ${effects.size} effects to start")
+                effects.forEach { start(it) }
+                return@update newState
+            }
         }
-
-        println("Found ${effects.size} effects to start")
-        effects.forEach { start(it) }
-        return mutationJob
     }
 
     /**
      * Inner class representing the store of a feature.
      */
     inner class Store() {
-        var state = this@Feature.state
-
-        fun dispatch(action: Action): IntentHandler = {
+        fun dispatch(action: Action): () -> Unit = {
             runBlocking { send(action) }
         }
 
-        operator fun component1() = state
+        @Composable
+        operator fun component1(): androidx.compose.runtime.State<State> {
+            return this@Feature.state.collectAsState()
+        }
         operator fun component2() = this::dispatch
     }
 
