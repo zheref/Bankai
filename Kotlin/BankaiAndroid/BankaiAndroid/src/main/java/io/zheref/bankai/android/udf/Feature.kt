@@ -5,50 +5,40 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import kotlinx.coroutines.*
 import kotlinx.coroutines.flow.*
+import kotlin.coroutines.CoroutineContext
 
-public abstract class Result<T, E: Exception> {}
-public data class SuccessResult<T, E: Exception>(val value: T): Result<T, E>()
-public data class FailureResult<T, E: Exception>(val exception: E): Result<T, E>()
-
-// Void to void ONCE
-public typealias ZBlock = (Exception?) -> Unit
-public typealias ZJob = suspend () -> Unit
-
-// Void to 1 value
-public typealias ZFuture<T> = suspend () -> T
-
-// Void to 1..* values
-public typealias ZYielderOf<T, E> = ((Result<T, E>) -> Void) -> Void
-
-// Void to * values
-public typealias ZFlowOf<T> = Flow<T>
-
-// TODO: Remove Zs
 typealias Reducer<State, Action> = (state: State, action: Action) -> Feature.Reduction<State, Action>
 typealias Sender<Action> = suspend (action: Action) -> Job
 typealias Thunk<Action> = suspend (send: Sender<Action>) -> Unit
 
 abstract class Feature<State, Action>(initialState: State) : ViewModel() {
+    /**
+     * The function that resolves the results of a given captured action.
+     */
     abstract val reducer: Reducer<State, Action>
-    // We keep feature state private so that it can only be changed by reducer
-    private val _runningJobs: MutableMap<String, Job> = mutableMapOf()
 
-    val runningJobs: Map<String, Job> = _runningJobs
+    /**
+     * Collection of asynchronous job currently in execution.
+     */
+    private val _runningJobs: MutableMap<String, Job> = mutableMapOf()
+    public val runningJobs get(): Map<String, Job> = _runningJobs
 
     /**
      * The current state of the feature.
      */
     private val _state = MutableStateFlow(initialState)
-    val state: StateFlow<State> = _state.asStateFlow()
+    public val state get(): StateFlow<State> = _state.asStateFlow()
+    public val currentState get() = state.value
 
     /**
-     * Asynchronously sends an action to the reducer in order to update the feature state and trigger any associated side effects.
-     *
+     * Asynchronously sends an action to the reducer in order to update the feature state and trigger any associated
+     * side effects.
      * @param action The action to be sent to the reducer.
+     * @return the job representing the asynchronous operatin running in the main thread.
      */
     suspend fun send(action: Action): Job {
         println("Received action: $action")
-        return viewModelScope.launch {
+        return viewModelScope.launch(Dispatchers.Main) {
             _state.update { currentState ->
                 val (newState, effects) = reducer(currentState, action)
                 println("Found ${effects.size} effects to start")
@@ -73,20 +63,55 @@ abstract class Feature<State, Action>(initialState: State) : ViewModel() {
         operator fun component2() = this::dispatch
     }
 
+    /**
+     * Data class that represents the outcome of a reducer.
+     */
     data class Reduction<State, Action>(
         val state: State,
         val effects: List<Effect<Action>> = emptyList()
-    )
+    ) {
+        fun with(effect: Effect<Action>): Reduction<State, Action> {
+            return Reduction(state, listOf(effect))
+        }
 
+        fun with(vararg effects: Effect<Action>): Reduction<State, Action> {
+            return Reduction(state, effects.toList())
+        }
+
+        fun withEffects(effects: List<Effect<Action>>): Reduction<State, Action> {
+            return Reduction(state, effects)
+        }
+    }
+
+    /**
+     * Returns a new reduction with the new state. Function created for ergonomics and readability.
+     */
+    public fun resolve(state: State = this.state.value): Reduction<State, Action> {
+        return Reduction(state)
+    }
+
+    /**
+     * Represents a side effect, with an identifier and a thunk that encapsulates the unit of work.
+     */
     data class Effect<out Action>(
         val identifier: String = String.random(),
         val start: Thunk<Action>
     ) {
         companion object {
-            fun <Action> fromFlow(identifier: String, flow: Flow<Action>): Effect<Action> {
+            /**
+             * Allows the creation of an effect given a flow encapsulating the work to be done.
+             * @param identifier The identifier of the effect.
+             * @param flow The flow that encapsulates the work to be done.
+             * @param context The coroutine context to be used for the flow.
+             * @return A new [Effect] instance.
+             */
+            fun <Action> fromFlow(identifier: String,
+                                  flow: Flow<Action>,
+                                  context: CoroutineContext = Dispatchers.Default
+            ): Effect<Action> {
                 return Effect(identifier = identifier, start = { send ->
                     flow
-                        .flowOn(Dispatchers.Default)
+                        .flowOn(context)
                         .map {
                             println("Intercepted action: $it")
                             it
@@ -97,6 +122,12 @@ abstract class Feature<State, Action>(initialState: State) : ViewModel() {
                 })
             }
 
+            /**
+             * Allows the creation of an effect given a suspend function encapsulating the unit of work.
+             * @param suspend The suspend function that encapsulates the work to be done.
+             * @param identifier The identifier of the effect.
+             * @return A new [Effect] instance.
+             */
             fun <Action> fromSuspend(suspend: suspend () -> Action, identifier: String): Effect<Action> {
                 return Effect(identifier = identifier, start = { send ->
                     coroutineScope {
@@ -106,10 +137,45 @@ abstract class Feature<State, Action>(initialState: State) : ViewModel() {
                 })
             }
 
+            /**
+             * Allows the creation of an effect given a function encapsulating the unit of work, which is not
+             * expected to resolve any outcome so the operation will never deliver any actions back to the reducer.
+             * @param fire The function that encapsulates the work to be done.
+             * @return A new [Effect] instance.
+             */
             fun <Action> fireAndForget(fire: () -> Unit): Effect<Action> {
                 return Effect(start = {
-                    runBlocking {
-                        launch { fire() }
+                    runBlocking { launch {
+                        // await
+                        fire()
+                    }}
+                })
+            }
+
+            /**
+             * Allows the creation of an effect given a saga encapsulating multiple potential action dispatches.
+             * This is an alternative to fromFlow without having to rely on multiple flows for different operation
+             * steps, and instead
+             */
+            fun <Action> run(work: suspend (send: Sender<Action>) -> Unit, identifier: String = String.random()): Effect<Action> {
+                return Effect(identifier = identifier, start = {
+                    coroutineScope {
+                        work(it)
+                    }
+                })
+            }
+
+            /**
+             * Allows the creation of an effect that runs a list of given effects in sequential order.
+             * @param effects The list of effects to be executed.
+             */
+            fun <Action> concat(vararg effects: Effect<Action>): Effect<Action> {
+                return Effect(start = {
+                    coroutineScope {
+                        effects.forEach { effect ->
+                            async { effect.start(it) }
+                                .await()
+                        }
                     }
                 })
             }
@@ -132,7 +198,22 @@ abstract class Feature<State, Action>(initialState: State) : ViewModel() {
             effect.start(this@Feature::send)
         }
 
+        job.invokeOnCompletion {
+            _runningJobs.remove(identifier)
+        }
+
         _runningJobs[identifier] = job
+    }
+
+    /**
+     * Creates an effect wrapping the termination of a running job (handling an effect)
+     * @param identifier The identifier of the job.
+     * @return [Effect] the effect to terminate the job.
+     */
+    public fun cancel(identifier: String): Effect<Action> {
+        return Effect(start = {
+            terminate(identifier)
+        })
     }
 
     /**
@@ -143,6 +224,13 @@ abstract class Feature<State, Action>(initialState: State) : ViewModel() {
         println("Terminating thunk with identifier: $identifier")
         _runningJobs[identifier]?.cancel()
         _runningJobs.remove(identifier)
+    }
+
+    /**
+     * Waits for all running jobs to complete.
+     */
+    public suspend fun waitForJobsToComplete() {
+        _runningJobs.values.joinAll()
     }
 }
 

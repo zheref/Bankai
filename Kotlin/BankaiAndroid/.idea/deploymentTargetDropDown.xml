@@ -14,7 +14,7 @@
       <entry key="testSend_withActionAndIndefiniteEffects()">
         <State />
       </entry>
-      <entry key="testSend_withActionAndNoEffects()">
+      <entry key="testSend_withActionAndIndefiniteIrregularEffects()">
         <State />
       </entry>
       <entry key="testSend_withActionAndSuspendEffect()">

@@ -23,6 +23,7 @@ class MyFeature(initialState: MyFeature.State): Feature<MyFeature.State, MyFeatu
         data class ChangeName(val name: String) : Action()
         data class DeployName(val name: String) : Action()
         data object ListenForNames: Action()
+        data object StepByStep: Action()
     }
 
     override val reducer: Reducer<State, Action> = reducer@ { state, action ->
@@ -33,11 +34,11 @@ class MyFeature(initialState: MyFeature.State): Feature<MyFeature.State, MyFeatu
         return@reducer when (action) {
             is Action.Dismiss -> {
                 val newState = state.copy(name = "")
-                Reduction(newState, emptyList())
+                resolve(newState)
             }
             is Action.ChangeName -> {
                 val newState = state.copy(name = action.name)
-                Reduction(newState, emptyList())
+                resolve(newState)
             }
             is Action.DeployName -> {
                 val effect = Effect.fromSuspend(
@@ -48,7 +49,7 @@ class MyFeature(initialState: MyFeature.State): Feature<MyFeature.State, MyFeatu
                     "deploy:${action.name}",
                 )
 
-                Reduction(state, listOf(effect))
+                resolve().with(effect)
             }
             is Action.ListenForNames -> {
                 val effect = Effect.fromFlow(
@@ -63,7 +64,19 @@ class MyFeature(initialState: MyFeature.State): Feature<MyFeature.State, MyFeatu
                     }
                 )
 
-                Reduction(state, listOf(effect))
+                resolve().with(effect)
+            }
+            is Action.StepByStep -> {
+                val effect = Effect.run({ send ->
+                    var itemIndex = 0
+                    while(itemIndex < 5) {
+                        delay(1000)
+                        itemIndex++
+                        send(Action.ChangeName("RemoteName-$itemIndex"))
+                    }
+                }, "listenForNamesStepByStep")
+
+                resolve().with(effect)
             }
         }
     }
@@ -136,7 +149,7 @@ class FeatureTests {
         assertEquals(MyFeature.Action.DeployName(newName), feature.calledReducerWithAction.last())
         assertEquals(updatedState1.name, initialName)
 
-        feature.runningJobs.values.joinAll()
+        feature.waitForJobsToComplete()
         val updatedState2 = feature.state.value
         assertEquals(MyFeature.Action.ChangeName(newName), feature.calledReducerWithAction.last())
         assertEquals(updatedState2.name, newName)
@@ -156,12 +169,12 @@ class FeatureTests {
 
         // Then
         job.join()
-        val updatedState1 = feature.state.value
+        val updatedState1 = feature.currentState
         assertEquals(MyFeature.Action.ListenForNames, feature.calledReducerWithAction.last())
         assertEquals(updatedState1.name, initialName)
 
-        feature.runningJobs.values.joinAll()
-        val updatedState2 = feature.state.value
+        feature.waitForJobsToComplete()
+        val updatedState2 = feature.currentState
         assertEquals(updatedState2.name, "RemoteName-5")
         assertEquals(MyFeature.Action.ChangeName("RemoteName-5"), feature.calledReducerWithAction.removeLast())
         assertEquals(MyFeature.Action.ChangeName("RemoteName-4"), feature.calledReducerWithAction.removeLast())
@@ -169,6 +182,34 @@ class FeatureTests {
         assertEquals(MyFeature.Action.ChangeName("RemoteName-2"), feature.calledReducerWithAction.removeLast())
         assertEquals(MyFeature.Action.ChangeName("RemoteName-1"), feature.calledReducerWithAction.removeLast())
 
+    }
+
+    @OptIn(ExperimentalCoroutinesApi::class)
+    @Test
+    fun testSend_withActionAndIndefiniteIrregularEffects() = runTest {
+        // Given
+        val initialName = "Initial"
+        val feature = MyFeature(
+            MyFeature.State(initialName)
+        )
+
+        // When
+        var job = feature.send(MyFeature.Action.StepByStep)
+        job.join()
+
+        // Then
+        val updatedState1 = feature.currentState
+        assertEquals(MyFeature.Action.StepByStep, feature.calledReducerWithAction.last())
+        assertEquals(updatedState1.name, initialName)
+
+        feature.waitForJobsToComplete()
+        val updatedState2 = feature.currentState
+        assertEquals(updatedState2.name, "RemoteName-5")
+        assertEquals(MyFeature.Action.ChangeName("RemoteName-5"), feature.calledReducerWithAction.removeLast())
+        assertEquals(MyFeature.Action.ChangeName("RemoteName-4"), feature.calledReducerWithAction.removeLast())
+        assertEquals(MyFeature.Action.ChangeName("RemoteName-3"), feature.calledReducerWithAction.removeLast())
+        assertEquals(MyFeature.Action.ChangeName("RemoteName-2"), feature.calledReducerWithAction.removeLast())
+        assertEquals(MyFeature.Action.ChangeName("RemoteName-1"), feature.calledReducerWithAction.removeLast())
     }
 
 }
