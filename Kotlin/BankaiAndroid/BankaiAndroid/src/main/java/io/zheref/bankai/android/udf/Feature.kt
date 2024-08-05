@@ -52,6 +52,9 @@ abstract class Feature<State, Action>(initialState: State) : ViewModel() {
      * Inner class representing the store of a feature.
      */
     inner class Store() {
+        /**
+         * Dispatches an action from a store to the reducer.
+         */
         fun dispatch(action: Action): () -> Unit = {
             runBlocking { send(action) }
         }
@@ -70,14 +73,26 @@ abstract class Feature<State, Action>(initialState: State) : ViewModel() {
         val state: State,
         val effects: List<Effect<Action>> = emptyList()
     ) {
+        /**
+         * Convenience function to apply an effect to the reduction.
+         * @param effect The effect to be applied.
+         */
         fun with(effect: Effect<Action>): Reduction<State, Action> {
             return Reduction(state, listOf(effect))
         }
 
+        /**
+         * Convenience function to apply multiple effects to the reduction.
+         * @param effects The effects to be applied.
+         */
         fun with(vararg effects: Effect<Action>): Reduction<State, Action> {
             return Reduction(state, effects.toList())
         }
 
+        /**
+         * Convenience function to apply list of effects to the reduction.
+         * @param effects The effects to be applied.
+         */
         fun withEffects(effects: List<Effect<Action>>): Reduction<State, Action> {
             return Reduction(state, effects)
         }
