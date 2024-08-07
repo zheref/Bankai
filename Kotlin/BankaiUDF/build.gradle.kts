@@ -1,5 +1,5 @@
 plugins {
-    kotlin("jvm") version "1.9.23"
+    kotlin("jvm") version "1.9.24"
 }
 
 group = "io.zheref.bankai.udf"
@@ -10,7 +10,7 @@ repositories {
 }
 
 dependencies {
-    implementation(files("../BankaiCore/out/artifacts/BankaiCore_main_jar/BankaiCore.main.jar"))
+    compileOnly("io.zheref.bankai.core:BankaiCore")
     implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.6.4")
 
     testImplementation("org.jetbrains.kotlin:kotlin-test")
@@ -19,9 +19,6 @@ dependencies {
 }
 
 tasks.test {
-    useJUnitPlatform()
-}
-tasks.named<Test>("test") {
     useJUnitPlatform()
 }
 kotlin {

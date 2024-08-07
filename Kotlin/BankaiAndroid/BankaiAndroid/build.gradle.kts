@@ -66,7 +66,7 @@ dependencies {
     implementation("androidx.compose.material:material:${Versions.composeLib}")
     implementation("androidx.compose.runtime:runtime-livedata:${Versions.composeLib}")
 
-    implementation(files("../../BankaiUDF/out/artifacts/BankaiUDF_main_jar/BankaiUDF.main.jar"))
+    compileOnly("io.zheref.bankai.udf:BankaiUDF")
 
     testImplementation("junit:junit:4.13.2")
     testImplementation("org.jetbrains.kotlinx:kotlinx-coroutines-test:1.6.4")

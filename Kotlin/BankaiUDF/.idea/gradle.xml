@@ -4,10 +4,22 @@
   <component name="GradleSettings">
     <option name="linkedExternalProjectsSettings">
       <GradleProjectSettings>
+        <compositeConfiguration>
+          <compositeBuild compositeDefinitionSource="SCRIPT">
+            <builds>
+              <build path="$PROJECT_DIR$/../BankaiCore" name="BankaiCore">
+                <projects>
+                  <project path="$PROJECT_DIR$/../BankaiCore" />
+                </projects>
+              </build>
+            </builds>
+          </compositeBuild>
+        </compositeConfiguration>
         <option name="externalProjectPath" value="$PROJECT_DIR$" />
         <option name="gradleJvm" value="jbr-17" />
         <option name="modules">
           <set>
+            <option value="$PROJECT_DIR$/../BankaiCore" />
             <option value="$PROJECT_DIR$" />
           </set>
         </option>
