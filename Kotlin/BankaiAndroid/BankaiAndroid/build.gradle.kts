@@ -66,6 +66,7 @@ dependencies {
     implementation("androidx.compose.material:material:${Versions.composeLib}")
     implementation("androidx.compose.runtime:runtime-livedata:${Versions.composeLib}")
 
+    implementation("io.zheref.bankai.core:BankaiCore")
     compileOnly("io.zheref.bankai.udf:BankaiUDF")
 
     testImplementation("junit:junit:4.13.2")

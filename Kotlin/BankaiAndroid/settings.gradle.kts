@@ -17,4 +17,5 @@ rootProject.name = "BankaiAndroid"
 include(":app")
 include(":BankaiAndroid")
 
+includeBuild("../BankaiCore")
 includeBuild("../BankaiUDF")

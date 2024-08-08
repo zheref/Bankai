@@ -3,6 +3,7 @@ package io.zheref.bankai.android.udf
 import androidx.compose.runtime.*
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import io.zheref.bankai.core.utils.random
 import kotlinx.coroutines.*
 import kotlinx.coroutines.flow.*
 import kotlin.coroutines.CoroutineContext
@@ -247,8 +248,4 @@ abstract class Feature<State, Action>(initialState: State) : ViewModel() {
     public suspend fun waitForJobsToComplete() {
         _runningJobs.values.joinAll()
     }
-}
-
-private fun String.Companion.random(): String {
-    return (0..10).map { ('a'..'z').random() }.joinToString("")
 }
