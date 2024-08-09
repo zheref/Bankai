@@ -28,7 +28,7 @@ abstract class Feature<State, Action>(initialState: State) : ViewModel() {
      * The current state of the feature.
      */
     private val _state = MutableStateFlow(initialState)
-    public val state get(): StateFlow<State> = _state.asStateFlow()
+    public val state: StateFlow<State> = _state.asStateFlow()
     public val currentState get() = state.value
 
     /**
@@ -39,14 +39,23 @@ abstract class Feature<State, Action>(initialState: State) : ViewModel() {
      */
     suspend fun send(action: Action): Job {
         println("Received action: $action")
-        return viewModelScope.launch(Dispatchers.Main) {
-            _state.update { currentState ->
-                val (newState, effects) = reducer(currentState, action)
-                println("Found ${effects.size} effects to start")
-                effects.forEach { start(it) }
-                return@update newState
-            }
+        val (newState, effects) = reducer(currentState, action)
+
+        val mutationJob = push(newState)
+
+        println("Found ${effects.size} effects to start")
+        effects.forEach { start(it) }
+        return mutationJob
+    }
+
+    private fun push(newState: State): Job {
+        val mutationJob = viewModelScope.launch(Dispatchers.Main) {
+            println("Received new state: \n$newState")
+            _state.emit(newState)
+            println("New state emitted from thread ${Thread.currentThread().name}")
         }
+
+        return mutationJob
     }
 
     /**
@@ -144,13 +153,12 @@ abstract class Feature<State, Action>(initialState: State) : ViewModel() {
              * @param identifier The identifier of the effect.
              * @return A new [Effect] instance.
              */
-            fun <Action> fromSuspend(suspend: suspend () -> Action, identifier: String): Effect<Action> {
-                return Effect(identifier = identifier, start = { send ->
-                    coroutineScope {
-                        val futureAction = async { suspend() }
-                        send(futureAction.await())
-                    }
-                })
+            fun <Action> fromSuspend(suspend: suspend () -> Action,
+                                     identifier: String,
+                                     context: CoroutineContext = Dispatchers.Default): Effect<Action> {
+                return Effect(identifier = identifier) { send ->
+                    send(suspend())
+                }
             }
 
             /**
@@ -174,11 +182,7 @@ abstract class Feature<State, Action>(initialState: State) : ViewModel() {
              * steps, and instead
              */
             fun <Action> run(work: suspend (send: Sender<Action>) -> Unit, identifier: String = String.random()): Effect<Action> {
-                return Effect(identifier = identifier, start = {
-                    coroutineScope {
-                        work(it)
-                    }
-                })
+                return Effect(identifier = identifier, start = work)
             }
 
             /**
