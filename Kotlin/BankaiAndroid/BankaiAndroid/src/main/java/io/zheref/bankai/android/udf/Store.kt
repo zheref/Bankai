@@ -8,6 +8,7 @@ import kotlinx.coroutines.flow.*
 
 public interface IStore<State, Action> {
     suspend fun send(action: Action): Job
+    fun send(thunk: ZThunk<State, Action>): Job
 }
 
 public class Store<State, Action>(
@@ -36,13 +37,7 @@ public class Store<State, Action>(
         return mutationJob
     }
 
-    fun dispatch(action: Action) = runBlocking {
-        launch(Dispatchers.Default) {
-            send(action)
-        }
-    }
-
-    fun send(thunk: ZThunk<State, Action>): Job {
+    override fun send(thunk: ZThunk<State, Action>): Job {
         println("Received thunk: $thunk")
 
         val thunkJob = viewModelScope.launch {
@@ -53,6 +48,12 @@ public class Store<State, Action>(
     }
 
     // Private operations
+
+    private fun dispatch(action: Action) = runBlocking {
+        launch(Dispatchers.Default) {
+            send(action)
+        }
+    }
 
     private suspend fun start(effect: Effect<Action>) {
         val identifier = effect.identifier ?: String.random()
@@ -81,15 +82,16 @@ public class Store<State, Action>(
 
     // Contextual Types
 
-    fun resolve(state: State = currentState): Resolve<State, Action> = Resolve<State, Action>(state)
+    fun resolve(state: State = currentState): Reduction<State, Action> = Reduction<State, Action>(state)
+    val autoresolve get(): Reduction<State, Action> = this.resolve()
 
-    data class Resolve<State, Action> (
+    data class Reduction<State, Action> (
         val state: State,
         val effects: List<Effect<Action>> = emptyList(),
     ) {
-        fun with(effect: Effect<Action>): Resolve<State, Action> = Resolve(state, listOf(effect))
-        fun with(vararg effects: Effect<Action>): Resolve<State, Action> = Resolve(state, effects.toList())
-        fun with(effects: List<Effect<Action>>): Resolve<State, Action> = Resolve(state, effects)
+        fun with(effect: Effect<Action>): Reduction<State, Action> = Reduction(state, listOf(effect))
+        fun with(vararg effects: Effect<Action>): Reduction<State, Action> = Reduction(state, effects.toList())
+        fun with(effects: List<Effect<Action>>): Reduction<State, Action> = Reduction(state, effects)
     }
 
     data class Effect<out Action> private constructor(
