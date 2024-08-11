@@ -8,7 +8,7 @@ import kotlinx.coroutines.*
 import kotlinx.coroutines.flow.*
 import kotlin.coroutines.CoroutineContext
 
-abstract class Feature<State, Action>(initialState: State) : ViewModel() {
+abstract class FeatureModel<State, Action>(initialState: State) : ViewModel() {
     /**
      * The function that resolves the results of a given captured action.
      */
@@ -67,7 +67,7 @@ abstract class Feature<State, Action>(initialState: State) : ViewModel() {
 
         @Composable
         operator fun component1(): androidx.compose.runtime.State<State> {
-            return this@Feature.state.collectAsState()
+            return this@FeatureModel.state.collectAsState()
         }
         operator fun component2() = this::dispatch
     }
@@ -211,7 +211,7 @@ abstract class Feature<State, Action>(initialState: State) : ViewModel() {
 
         println("Starting thunk with identifier: $identifier")
         val job = viewModelScope.launch {
-            effect.start(this@Feature::send)
+            effect.start(this@FeatureModel::send)
         }
 
         job.invokeOnCompletion {

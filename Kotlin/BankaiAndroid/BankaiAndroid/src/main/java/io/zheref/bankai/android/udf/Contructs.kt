@@ -6,7 +6,7 @@ import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flowOn
 
-typealias Folder<State, Action> = (state: State, action: Action) -> Feature.Fold<State, Action>
+typealias Folder<State, Action> = (state: State, action: Action) -> FeatureModel.Fold<State, Action>
 typealias Reducer<State, Action> = Store<State, Action>.(state: State, action: Action) -> Store.Reduction<State, Action>
 typealias Sender<Action> = suspend (action: Action) -> Job
 typealias Dispatcher<Action> = (action: Action) -> Unit

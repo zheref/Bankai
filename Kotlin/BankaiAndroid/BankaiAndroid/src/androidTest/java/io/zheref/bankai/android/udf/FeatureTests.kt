@@ -12,7 +12,7 @@ import org.junit.Assert.assertEquals
 import org.junit.Rule
 import org.junit.Test
 
-class MyFeature(initialState: MyFeature.State): Feature<MyFeature.State, MyFeature.Action>(initialState) {
+class MyFeature(initialState: MyFeature.State): FeatureModel<MyFeature.State, MyFeature.Action>(initialState) {
     // Spies
     val calledFolderWithAction: MutableList<Action> = mutableListOf()
 
