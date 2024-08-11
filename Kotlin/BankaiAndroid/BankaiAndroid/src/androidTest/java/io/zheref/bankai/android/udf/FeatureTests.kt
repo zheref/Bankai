@@ -14,7 +14,7 @@ import org.junit.Test
 
 class MyFeature(initialState: MyFeature.State): Feature<MyFeature.State, MyFeature.Action>(initialState) {
     // Spies
-    val calledReducerWithAction: MutableList<Action> = mutableListOf()
+    val calledFolderWithAction: MutableList<Action> = mutableListOf()
 
     data class State(val name: String)
 
@@ -26,12 +26,12 @@ class MyFeature(initialState: MyFeature.State): Feature<MyFeature.State, MyFeatu
         data object StepByStep: Action()
     }
 
-    override val reducer: Reducer<State, Action> = reducer@ { state, action ->
+    override val folder: Folder<State, Action> = folder@ { state, action ->
         // Spy sake
-        calledReducerWithAction.add(action)
+        calledFolderWithAction.add(action)
 
         // Actual reducer logic
-        return@reducer when (action) {
+        return@folder when (action) {
             is Action.Dismiss -> {
                 val newState = state.copy(name = "")
                 resolve(newState)
@@ -102,7 +102,7 @@ class FeatureTests {
         job.join()
 
         val updatedState = feature.state.value
-        val lastHandledAction = feature.calledReducerWithAction.last()
+        val lastHandledAction = feature.calledFolderWithAction.last()
 
         assertEquals(lastHandledAction, MyFeature.Action.Dismiss)
         assertEquals(updatedState.name, "")
@@ -124,7 +124,7 @@ class FeatureTests {
         job.join()
 
         val updatedState = feature.state.value
-        val lastHandledAction = feature.calledReducerWithAction.last()
+        val lastHandledAction = feature.calledFolderWithAction.last()
 
         assertEquals(lastHandledAction, MyFeature.Action.ChangeName(newName))
         assertEquals(updatedState.name, newName)
@@ -146,12 +146,12 @@ class FeatureTests {
         // Then
         job.join()
         val updatedState1 = feature.state.value
-        assertEquals(MyFeature.Action.DeployName(newName), feature.calledReducerWithAction.last())
+        assertEquals(MyFeature.Action.DeployName(newName), feature.calledFolderWithAction.last())
         assertEquals(updatedState1.name, initialName)
 
         feature.waitForJobsToComplete()
         val updatedState2 = feature.state.value
-        assertEquals(MyFeature.Action.ChangeName(newName), feature.calledReducerWithAction.last())
+        assertEquals(MyFeature.Action.ChangeName(newName), feature.calledFolderWithAction.last())
         assertEquals(updatedState2.name, newName)
     }
 
@@ -170,17 +170,17 @@ class FeatureTests {
         // Then
         job.join()
         val updatedState1 = feature.currentState
-        assertEquals(MyFeature.Action.ListenForNames, feature.calledReducerWithAction.last())
+        assertEquals(MyFeature.Action.ListenForNames, feature.calledFolderWithAction.last())
         assertEquals(updatedState1.name, initialName)
 
         feature.waitForJobsToComplete()
         val updatedState2 = feature.currentState
         assertEquals(updatedState2.name, "RemoteName-5")
-        assertEquals(MyFeature.Action.ChangeName("RemoteName-5"), feature.calledReducerWithAction.removeLast())
-        assertEquals(MyFeature.Action.ChangeName("RemoteName-4"), feature.calledReducerWithAction.removeLast())
-        assertEquals(MyFeature.Action.ChangeName("RemoteName-3"), feature.calledReducerWithAction.removeLast())
-        assertEquals(MyFeature.Action.ChangeName("RemoteName-2"), feature.calledReducerWithAction.removeLast())
-        assertEquals(MyFeature.Action.ChangeName("RemoteName-1"), feature.calledReducerWithAction.removeLast())
+        assertEquals(MyFeature.Action.ChangeName("RemoteName-5"), feature.calledFolderWithAction.removeLast())
+        assertEquals(MyFeature.Action.ChangeName("RemoteName-4"), feature.calledFolderWithAction.removeLast())
+        assertEquals(MyFeature.Action.ChangeName("RemoteName-3"), feature.calledFolderWithAction.removeLast())
+        assertEquals(MyFeature.Action.ChangeName("RemoteName-2"), feature.calledFolderWithAction.removeLast())
+        assertEquals(MyFeature.Action.ChangeName("RemoteName-1"), feature.calledFolderWithAction.removeLast())
 
     }
 
@@ -199,17 +199,17 @@ class FeatureTests {
 
         // Then
         val updatedState1 = feature.currentState
-        assertEquals(MyFeature.Action.StepByStep, feature.calledReducerWithAction.last())
+        assertEquals(MyFeature.Action.StepByStep, feature.calledFolderWithAction.last())
         assertEquals(updatedState1.name, initialName)
 
         feature.waitForJobsToComplete()
         val updatedState2 = feature.currentState
         assertEquals(updatedState2.name, "RemoteName-5")
-        assertEquals(MyFeature.Action.ChangeName("RemoteName-5"), feature.calledReducerWithAction.removeLast())
-        assertEquals(MyFeature.Action.ChangeName("RemoteName-4"), feature.calledReducerWithAction.removeLast())
-        assertEquals(MyFeature.Action.ChangeName("RemoteName-3"), feature.calledReducerWithAction.removeLast())
-        assertEquals(MyFeature.Action.ChangeName("RemoteName-2"), feature.calledReducerWithAction.removeLast())
-        assertEquals(MyFeature.Action.ChangeName("RemoteName-1"), feature.calledReducerWithAction.removeLast())
+        assertEquals(MyFeature.Action.ChangeName("RemoteName-5"), feature.calledFolderWithAction.removeLast())
+        assertEquals(MyFeature.Action.ChangeName("RemoteName-4"), feature.calledFolderWithAction.removeLast())
+        assertEquals(MyFeature.Action.ChangeName("RemoteName-3"), feature.calledFolderWithAction.removeLast())
+        assertEquals(MyFeature.Action.ChangeName("RemoteName-2"), feature.calledFolderWithAction.removeLast())
+        assertEquals(MyFeature.Action.ChangeName("RemoteName-1"), feature.calledFolderWithAction.removeLast())
     }
 
 }

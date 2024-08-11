@@ -8,15 +8,11 @@ import kotlinx.coroutines.*
 import kotlinx.coroutines.flow.*
 import kotlin.coroutines.CoroutineContext
 
-typealias Reducer<State, Action> = (state: State, action: Action) -> Feature.Reduction<State, Action>
-typealias Sender<Action> = suspend (action: Action) -> Job
-typealias Thunk<Action> = suspend (send: Sender<Action>) -> Unit
-
 abstract class Feature<State, Action>(initialState: State) : ViewModel() {
     /**
      * The function that resolves the results of a given captured action.
      */
-    abstract val reducer: Reducer<State, Action>
+    abstract val folder: Folder<State, Action>
 
     /**
      * Collection of asynchronous job currently in execution.
@@ -34,12 +30,12 @@ abstract class Feature<State, Action>(initialState: State) : ViewModel() {
     /**
      * Asynchronously sends an action to the reducer in order to update the feature state and trigger any associated
      * side effects.
-     * @param action The action to be sent to the reducer.
+     * @param action The action to be sent to the folder.
      * @return the job representing the asynchronous operatin running in the main thread.
      */
     suspend fun send(action: Action): Job {
         println("Received action: $action")
-        val (newState, effects) = reducer(currentState, action)
+        val (newState, effects) = folder(currentState, action)
 
         val mutationJob = push(newState)
 
@@ -79,7 +75,7 @@ abstract class Feature<State, Action>(initialState: State) : ViewModel() {
     /**
      * Data class that represents the outcome of a reducer.
      */
-    data class Reduction<State, Action>(
+    data class Fold<State, Action>(
         val state: State,
         val effects: List<Effect<Action>> = emptyList()
     ) {
@@ -87,32 +83,32 @@ abstract class Feature<State, Action>(initialState: State) : ViewModel() {
          * Convenience function to apply an effect to the reduction.
          * @param effect The effect to be applied.
          */
-        fun with(effect: Effect<Action>): Reduction<State, Action> {
-            return Reduction(state, listOf(effect))
+        fun with(effect: Effect<Action>): Fold<State, Action> {
+            return Fold(state, listOf(effect))
         }
 
         /**
          * Convenience function to apply multiple effects to the reduction.
          * @param effects The effects to be applied.
          */
-        fun with(vararg effects: Effect<Action>): Reduction<State, Action> {
-            return Reduction(state, effects.toList())
+        fun with(vararg effects: Effect<Action>): Fold<State, Action> {
+            return Fold(state, effects.toList())
         }
 
         /**
          * Convenience function to apply list of effects to the reduction.
          * @param effects The effects to be applied.
          */
-        fun withEffects(effects: List<Effect<Action>>): Reduction<State, Action> {
-            return Reduction(state, effects)
+        fun withEffects(effects: List<Effect<Action>>): Fold<State, Action> {
+            return Fold(state, effects)
         }
     }
 
     /**
      * Returns a new reduction with the new state. Function created for ergonomics and readability.
      */
-    public fun resolve(state: State = this.state.value): Reduction<State, Action> {
-        return Reduction(state)
+    public fun resolve(state: State = this.state.value): Fold<State, Action> {
+        return Fold(state)
     }
 
     /**
@@ -120,7 +116,7 @@ abstract class Feature<State, Action>(initialState: State) : ViewModel() {
      */
     data class Effect<out Action>(
         val identifier: String = String.random(),
-        val start: Thunk<Action>
+        val start: ZOperation<Action>
     ) {
         companion object {
             /**
