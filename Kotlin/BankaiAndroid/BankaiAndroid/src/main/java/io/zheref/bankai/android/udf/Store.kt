@@ -9,6 +9,7 @@ import kotlinx.coroutines.flow.*
 public interface IStore<State, Action> {
     suspend fun send(action: Action): Job
     fun send(thunk: ZThunk<State, Action>): Job
+    suspend fun waitForJobsToComplete()
 }
 
 public class Store<State, Action>(
@@ -45,6 +46,10 @@ public class Store<State, Action>(
         }
 
         return thunkJob
+    }
+
+    override suspend fun waitForJobsToComplete() {
+        _runningJobs.values.joinAll()
     }
 
     // Private operations

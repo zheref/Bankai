@@ -31,7 +31,7 @@ abstract class Feature<State, Action>(initialState: State) : ViewModel() {
      * Asynchronously sends an action to the reducer in order to update the feature state and trigger any associated
      * side effects.
      * @param action The action to be sent to the folder.
-     * @return the job representing the asynchronous operatin running in the main thread.
+     * @return the job representing the asynchronous operation running in the main thread.
      */
     suspend fun send(action: Action): Job {
         println("Received action: $action")
