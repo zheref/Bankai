@@ -15,3 +15,4 @@ public typealias ZFuture<T> = suspend () -> T
 
 // Void to 1..* values
 public typealias ZYielderOf<T, E> = ((Result<T, E>) -> Void) -> Void
+

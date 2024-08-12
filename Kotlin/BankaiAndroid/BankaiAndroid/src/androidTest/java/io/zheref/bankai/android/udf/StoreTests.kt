@@ -15,7 +15,11 @@ import org.junit.Test
 interface StoreFeature<State, Action> {
     val reducer: Reducer<State, Action>
     val defaultState: State
-    fun defaultStore(initialState: State = defaultState): Store<State, Action>
+
+    fun defaultStore(initialState: State = defaultState): Store<State, Action> = Store<State, Action>(
+        initialState = initialState,
+        reducer = this.reducer,
+    )
 }
 
 object TestFeature: StoreFeature<State, Action> {
@@ -86,11 +90,6 @@ object TestFeature: StoreFeature<State, Action> {
         data object ListenForNames: Action()
         data object StepByStep: Action()
     }
-
-    override fun defaultStore(initialState: State): Store<State, Action> = Store<State, Action>(
-        initialState = initialState,
-        reducer = reducer
-    )
 
     operator fun component1(): State = defaultState
     operator fun component2() = this.reducer
