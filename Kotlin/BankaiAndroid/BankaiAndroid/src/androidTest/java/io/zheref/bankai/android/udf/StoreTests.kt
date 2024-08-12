@@ -2,7 +2,8 @@ package io.zheref.bankai.android.udf
 
 import io.zheref.bankai.android.MainDispatcherRule
 import io.zheref.bankai.android.udf.Store.Effect
-import io.zheref.bankai.android.udf.MyFeature.Action
+import io.zheref.bankai.android.udf.TestFeature.State
+import io.zheref.bankai.android.udf.TestFeature.Action
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.flow
@@ -11,11 +12,17 @@ import org.junit.Assert.assertEquals
 import org.junit.Rule
 import org.junit.Test
 
-object testFeature {
+interface StoreFeature<State, Action> {
+    val reducer: Reducer<State, Action>
+    val defaultState: State
+    fun defaultStore(initialState: State = defaultState): Store<State, Action>
+}
+
+object TestFeature: StoreFeature<State, Action> {
     // Spies
     val calledReducerWithAction: MutableList<Action> = mutableListOf()
 
-    val reducer: Reducer<State, Action> = { state, action ->
+    override val reducer: Reducer<State, Action> = { state, action ->
         // Spy sake
         calledReducerWithAction.add(action)
 
@@ -29,7 +36,7 @@ object testFeature {
                 val effect = Effect.future(
                     {
                         delay(1000)
-                        return@future testFeature.Action.ChangeName(action.name)
+                        return@future TestFeature.Action.ChangeName(action.name)
                     },
                     "deploy:${action.name}",
                 )
@@ -43,7 +50,7 @@ object testFeature {
                         while(itemIndex < 5) {
                             delay(1000)
                             itemIndex++
-                            emit(testFeature.Action.ChangeName("RemoteName-$itemIndex"))
+                            emit(Action.ChangeName("RemoteName-$itemIndex"))
                         }
                     },
                     "listenForNames"
@@ -57,7 +64,7 @@ object testFeature {
                     while(itemIndex < 5) {
                         delay(1000)
                         itemIndex++
-                        send(testFeature.Action.ChangeName("RemoteName-$itemIndex"))
+                        send(Action.ChangeName("RemoteName-$itemIndex"))
                     }
                 }, "listenForNamesStepByStep")
 
@@ -68,7 +75,7 @@ object testFeature {
 
     data class State(val name: String)
 
-    val blankState get(): State = State(
+    override val defaultState get(): State = State(
         name = ""
     )
 
@@ -80,12 +87,12 @@ object testFeature {
         data object StepByStep: Action()
     }
 
-    fun defaultStore(initialState: State): Store<State, Action> = Store<State, Action>(
+    override fun defaultStore(initialState: State): Store<State, Action> = Store<State, Action>(
         initialState = initialState,
         reducer = reducer
     )
 
-    operator fun component1(): State = blankState
+    operator fun component1(): State = defaultState
     operator fun component2() = this.reducer
 }
 
@@ -98,22 +105,22 @@ class StoreTests {
     fun testSend_withActionAndNoEffects() = runTest {
         // Given
         val initialName = "Initial"
-        val store = testFeature.defaultStore(
-            initialState = testFeature.blankState.copy(
+        val store = TestFeature.defaultStore(
+            initialState = TestFeature.defaultState.copy(
                 name = initialName
             ),
         )
 
         // When
-        val job = store.send(testFeature.Action.Dismiss)
+        val job = store.send(Action.Dismiss)
 
         // Then
         job.join()
 
         val updatedState = store.currentState
-        val lastHandledAction = testFeature.calledReducerWithAction.last()
+        val lastHandledAction = TestFeature.calledReducerWithAction.last()
 
-        assertEquals(testFeature.Action.Dismiss, lastHandledAction)
+        assertEquals(Action.Dismiss, lastHandledAction)
         assertEquals("", updatedState.name)
     }
 
@@ -121,23 +128,23 @@ class StoreTests {
     fun testSend_withParameteredActionAndNoEffects() = runTest {
         // Given
         val initialName = "Initial"
-        val store = testFeature.defaultStore(
-            initialState = testFeature.blankState.copy(
+        val store = TestFeature.defaultStore(
+            initialState = TestFeature.defaultState.copy(
                 name = initialName
             ),
         )
         val newName = "NewName"
 
         // When
-        val job = store.send(testFeature.Action.ChangeName(newName))
+        val job = store.send(TestFeature.Action.ChangeName(newName))
 
         // Then
         job.join()
 
         val updatedState = store.currentState
-        val lastHandledAction = testFeature.calledReducerWithAction.last()
+        val lastHandledAction = TestFeature.calledReducerWithAction.last()
 
-        assertEquals(lastHandledAction, testFeature.Action.ChangeName(newName))
+        assertEquals(lastHandledAction, TestFeature.Action.ChangeName(newName))
         assertEquals(updatedState.name, newName)
     }
 
@@ -146,25 +153,25 @@ class StoreTests {
     fun testSend_withActionAndSuspendEffect() = runTest {
         // Given
         val initialName = "Initial"
-        val store = testFeature.defaultStore(
-            initialState = testFeature.blankState.copy(
+        val store = TestFeature.defaultStore(
+            initialState = TestFeature.defaultState.copy(
                 name = initialName
             ),
         )
         val newName = "NewName"
 
         // When
-        val job = store.send(testFeature.Action.DeployName(newName))
+        val job = store.send(TestFeature.Action.DeployName(newName))
 
         // Then
         job.join()
         val updatedState1 = store.state.value
-        assertEquals(testFeature.Action.DeployName(newName), testFeature.calledReducerWithAction.last())
+        assertEquals(TestFeature.Action.DeployName(newName), TestFeature.calledReducerWithAction.last())
         assertEquals(updatedState1.name, initialName)
 
         store.waitForJobsToComplete()
         val updatedState2 = store.state.value
-        assertEquals(testFeature.Action.ChangeName(newName), testFeature.calledReducerWithAction.last())
+        assertEquals(TestFeature.Action.ChangeName(newName), TestFeature.calledReducerWithAction.last())
         assertEquals(updatedState2.name, newName)
     }
 
@@ -173,29 +180,29 @@ class StoreTests {
     fun testSend_withActionAndIndefiniteEffects() = runTest {
         // Given
         val initialName = "Initial"
-        val store = testFeature.defaultStore(
-            initialState = testFeature.blankState.copy(
+        val store = TestFeature.defaultStore(
+            initialState = TestFeature.defaultState.copy(
                 name = initialName
             ),
         )
 
         // When
-        val job = store.send(testFeature.Action.ListenForNames)
+        val job = store.send(TestFeature.Action.ListenForNames)
 
         // Then
         job.join()
         val updatedState1 = store.currentState
-        assertEquals(testFeature.Action.ListenForNames, testFeature.calledReducerWithAction.last())
+        assertEquals(TestFeature.Action.ListenForNames, TestFeature.calledReducerWithAction.last())
         assertEquals(updatedState1.name, initialName)
 
         store.waitForJobsToComplete()
         val updatedState2 = store.currentState
         assertEquals(updatedState2.name, "RemoteName-5")
-        assertEquals(testFeature.Action.ChangeName("RemoteName-5"), testFeature.calledReducerWithAction.removeLast())
-        assertEquals(testFeature.Action.ChangeName("RemoteName-4"), testFeature.calledReducerWithAction.removeLast())
-        assertEquals(testFeature.Action.ChangeName("RemoteName-3"), testFeature.calledReducerWithAction.removeLast())
-        assertEquals(testFeature.Action.ChangeName("RemoteName-2"), testFeature.calledReducerWithAction.removeLast())
-        assertEquals(testFeature.Action.ChangeName("RemoteName-1"), testFeature.calledReducerWithAction.removeLast())
+        assertEquals(TestFeature.Action.ChangeName("RemoteName-5"), TestFeature.calledReducerWithAction.removeLast())
+        assertEquals(TestFeature.Action.ChangeName("RemoteName-4"), TestFeature.calledReducerWithAction.removeLast())
+        assertEquals(TestFeature.Action.ChangeName("RemoteName-3"), TestFeature.calledReducerWithAction.removeLast())
+        assertEquals(TestFeature.Action.ChangeName("RemoteName-2"), TestFeature.calledReducerWithAction.removeLast())
+        assertEquals(TestFeature.Action.ChangeName("RemoteName-1"), TestFeature.calledReducerWithAction.removeLast())
 
     }
 
@@ -204,29 +211,29 @@ class StoreTests {
     fun testSend_withActionAndIndefiniteIrregularEffects() = runTest {
         // Given
         val initialName = "Initial"
-        val store = testFeature.defaultStore(
-            initialState = testFeature.blankState.copy(
+        val store = TestFeature.defaultStore(
+            initialState = TestFeature.defaultState.copy(
                 name = initialName
             ),
         )
 
         // When
-        var job = store.send(testFeature.Action.StepByStep)
+        var job = store.send(TestFeature.Action.StepByStep)
         job.join()
 
         // Then
         val updatedState1 = store.currentState
-        assertEquals(testFeature.Action.StepByStep, testFeature.calledReducerWithAction.last())
+        assertEquals(TestFeature.Action.StepByStep, TestFeature.calledReducerWithAction.last())
         assertEquals(updatedState1.name, initialName)
 
         store.waitForJobsToComplete()
         val updatedState2 = store.currentState
         assertEquals(updatedState2.name, "RemoteName-5")
-        assertEquals(testFeature.Action.ChangeName("RemoteName-5"), testFeature.calledReducerWithAction.removeLast())
-        assertEquals(testFeature.Action.ChangeName("RemoteName-4"), testFeature.calledReducerWithAction.removeLast())
-        assertEquals(testFeature.Action.ChangeName("RemoteName-3"), testFeature.calledReducerWithAction.removeLast())
-        assertEquals(testFeature.Action.ChangeName("RemoteName-2"), testFeature.calledReducerWithAction.removeLast())
-        assertEquals(testFeature.Action.ChangeName("RemoteName-1"), testFeature.calledReducerWithAction.removeLast())
+        assertEquals(TestFeature.Action.ChangeName("RemoteName-5"), TestFeature.calledReducerWithAction.removeLast())
+        assertEquals(TestFeature.Action.ChangeName("RemoteName-4"), TestFeature.calledReducerWithAction.removeLast())
+        assertEquals(TestFeature.Action.ChangeName("RemoteName-3"), TestFeature.calledReducerWithAction.removeLast())
+        assertEquals(TestFeature.Action.ChangeName("RemoteName-2"), TestFeature.calledReducerWithAction.removeLast())
+        assertEquals(TestFeature.Action.ChangeName("RemoteName-1"), TestFeature.calledReducerWithAction.removeLast())
     }
 
 }
