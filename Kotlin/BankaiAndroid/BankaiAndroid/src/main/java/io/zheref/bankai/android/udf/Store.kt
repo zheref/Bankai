@@ -97,6 +97,8 @@ public class Store<State, Action>(
         fun with(effect: Effect<Action>): Reduction<State, Action> = Reduction(state, listOf(effect))
         fun with(vararg effects: Effect<Action>): Reduction<State, Action> = Reduction(state, effects.toList())
         fun with(effects: List<Effect<Action>>): Reduction<State, Action> = Reduction(state, effects)
+        fun then(vararg  effects: Effect<Action>): Reduction<State, Action> = Reduction(state, effects.toList())
+        fun then(effects: List<Effect<Action>>): Reduction<State, Action> = Reduction(state, listOf(Effect.concat(effects)))
     }
 
     data class Effect<out Action> private constructor(
@@ -118,6 +120,15 @@ public class Store<State, Action>(
 
             fun <State, Action> thunk(work: Thunk<State, Action>, identifier: String = String.random()): ZThunk<State, Action>
                 = ZThunk(work)
+
+            fun <Action> concat(effects: List<Effect<Action>>): Effect<Action> = Effect { withSender ->
+                coroutineScope {
+                    effects.forEach { effect ->
+                        async { effect.operation(withSender) }
+                            .await()
+                    }
+                }
+            }
         }
     }
 

@@ -111,6 +111,8 @@ abstract class FeatureModel<State, Action>(initialState: State) : ViewModel() {
         return Fold(state)
     }
 
+    public val autoresolve get(): Fold<State, Action> = this.resolve()
+
     /**
      * Represents a side effect, with an identifier and a thunk that encapsulates the unit of work.
      */
