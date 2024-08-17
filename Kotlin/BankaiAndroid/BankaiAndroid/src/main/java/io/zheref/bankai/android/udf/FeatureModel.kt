@@ -33,25 +33,18 @@ abstract class FeatureModel<State, Action>(initialState: State) : ViewModel() {
      * @param action The action to be sent to the folder.
      * @return the job representing the asynchronous operation running in the main thread.
      */
-    suspend fun send(action: Action): Job {
+    suspend fun send(
+        action: Action,
+        produce: suspend (List<Effect<Action>>) -> Unit = { this.produce(it) }
+    ): Job = viewModelScope.launch(Dispatchers.Main) {
         println("Received action: $action")
-        val (newState, effects) = folder(currentState, action)
 
-        val mutationJob = push(newState)
-
-        println("Found ${effects.size} effects to start")
-        effects.forEach { start(it) }
-        return mutationJob
-    }
-
-    private fun push(newState: State): Job {
-        val mutationJob = viewModelScope.launch(Dispatchers.Main) {
+        _state.update { oldState ->
+            val (newState, effects) = folder(oldState, action)
+            produce(effects)
             println("Received new state: \n$newState")
-            _state.emit(newState)
-            println("New state emitted from thread ${Thread.currentThread().name}")
+            newState
         }
-
-        return mutationJob
     }
 
     /**
@@ -198,6 +191,11 @@ abstract class FeatureModel<State, Action>(initialState: State) : ViewModel() {
                 })
             }
         }
+    }
+    
+    private suspend fun produce(effects: List<Effect<Action>>) = coroutineScope {
+        println("Found ${effects.size} effects to start")
+        effects.forEach { start(it) }
     }
 
     /**
