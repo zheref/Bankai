@@ -123,6 +123,10 @@ abstract class FeatureModel<State, Action>(
         val start: ZOperation<Action>
     ) {
         companion object {
+            fun <Action> send(action: Action): Effect<Action> = Effect {
+                send(action)
+            }
+
             /**
              * Allows the creation of an effect given a flow encapsulating the work to be done.
              * @param identifier The identifier of the effect.
