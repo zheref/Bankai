@@ -8,7 +8,13 @@ import kotlinx.coroutines.*
 import kotlinx.coroutines.flow.*
 import kotlin.coroutines.CoroutineContext
 
-abstract class FeatureModel<State, Action>(initialState: State) : ViewModel() {
+interface ParentFeature<ParentAction> {
+    suspend fun receiveFromChild(action: ParentAction): Job
+}
+
+abstract class FeatureModel<State, Action>(
+    initialState: State
+) : ViewModel() {
     /**
      * The function that resolves the results of a given captured action.
      */
@@ -47,6 +53,10 @@ abstract class FeatureModel<State, Action>(initialState: State) : ViewModel() {
         }
     }
 
+    fun interface Dispatcher<Action> {
+        operator fun invoke(action: Action): () -> Unit
+    }
+
     /**
      * Inner class representing the store of a feature.
      */
@@ -54,15 +64,14 @@ abstract class FeatureModel<State, Action>(initialState: State) : ViewModel() {
         /**
          * Dispatches an action from a store to the reducer.
          */
-        fun dispatch(action: Action): () -> Unit = {
-            runBlocking { send(action) }
+        val dispatch = Dispatcher<Action> {
+            { runBlocking { send(it) } }
         }
 
         @Composable
-        operator fun component1(): androidx.compose.runtime.State<State> {
-            return this@FeatureModel.state.collectAsState()
-        }
-        operator fun component2() = this::dispatch
+        operator fun component1(): androidx.compose.runtime.State<State>
+            = this@FeatureModel.state.collectAsState()
+        operator fun component2(): Dispatcher<Action> = this.dispatch
     }
 
     /**
@@ -210,7 +219,7 @@ abstract class FeatureModel<State, Action>(initialState: State) : ViewModel() {
         val identifier = effect.identifier ?: String.random()
 
         println("Starting thunk with identifier: $identifier")
-        val job = viewModelScope.launch {
+        val job = viewModelScope.launch(Dispatchers.Default) {
             effect.start(this@FeatureModel::send)
         }
 
@@ -248,4 +257,21 @@ abstract class FeatureModel<State, Action>(initialState: State) : ViewModel() {
     public suspend fun waitForJobsToComplete() {
         _runningJobs.values.joinAll()
     }
+
+    suspend fun receiveFromChild(action: Action) = coroutineScope {
+        send(action)
+    }
+}
+
+abstract class ChildFeatureModel<State, Action, ParentAction>(
+    initialState: State,
+    val parentFeature: ParentFeature<ParentAction>?
+): FeatureModel<State, Action>(
+    initialState
+) {
+
+    fun Effect.Companion.parentSend(action: ParentAction): Effect<Action> = Effect {
+        parentFeature?.receiveFromChild(action)
+    }
+
 }

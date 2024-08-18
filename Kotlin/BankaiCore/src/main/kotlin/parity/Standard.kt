@@ -20,6 +20,8 @@ data class ZBinding<T>(
     val get: () -> T,
     var set: (T) -> Unit
 ) {
+    val current get(): T = get()
+
     companion object {
         fun <T> create(initialValue: T): ZBinding<T> {
             var value = initialValue
