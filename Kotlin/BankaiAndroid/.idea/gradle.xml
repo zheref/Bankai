@@ -4,13 +4,31 @@
   <component name="GradleSettings">
     <option name="linkedExternalProjectsSettings">
       <GradleProjectSettings>
+        <compositeConfiguration>
+          <compositeBuild compositeDefinitionSource="SCRIPT">
+            <builds>
+              <build path="$PROJECT_DIR$/../BankaiCore" name="BankaiCore">
+                <projects>
+                  <project path="$PROJECT_DIR$/../BankaiCore" />
+                </projects>
+              </build>
+              <build path="$PROJECT_DIR$/../BankaiUDF" name="BankaiUDF">
+                <projects>
+                  <project path="$PROJECT_DIR$/../BankaiUDF" />
+                </projects>
+              </build>
+            </builds>
+          </compositeBuild>
+        </compositeConfiguration>
         <option name="externalProjectPath" value="$PROJECT_DIR$" />
-        <option name="gradleJvm" value="#GRADLE_LOCAL_JAVA_HOME" />
+        <option name="gradleJvm" value="corretto-20" />
         <option name="modules">
           <set>
             <option value="$PROJECT_DIR$" />
             <option value="$PROJECT_DIR$/BankaiAndroid" />
             <option value="$PROJECT_DIR$/app" />
+            <option value="$PROJECT_DIR$/../BankaiCore" />
+            <option value="$PROJECT_DIR$/../BankaiUDF" />
           </set>
         </option>
       </GradleProjectSettings>
