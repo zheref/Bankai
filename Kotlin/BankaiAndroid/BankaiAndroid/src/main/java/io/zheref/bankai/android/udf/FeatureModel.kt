@@ -12,6 +12,17 @@ interface ParentFeature<ParentAction> {
     suspend fun receiveFromChild(action: ParentAction): Job
 }
 
+/**
+ * An abstract class representing a feature model.
+ *
+ * @param State The type of the feature state.
+ * @param Action The type of the action.
+ * @property initialState The initial state of the feature.
+ * @property folder The function that resolves the results of a given captured action.
+ * @property runningJobs A read-only map that holds the currently running jobs.
+ * @property state A read-only state flow controlling the current state of the feature.
+ * @property currentState The current state of the feature.
+ */
 abstract class FeatureModel<State, Action>(
     initialState: State
 ) : ViewModel() {
@@ -24,14 +35,14 @@ abstract class FeatureModel<State, Action>(
      * Collection of asynchronous job currently in execution.
      */
     private val _runningJobs: MutableMap<String, Job> = mutableMapOf()
-    public val runningJobs get(): Map<String, Job> = _runningJobs
+    val runningJobs get(): Map<String, Job> = _runningJobs
 
     /**
      * The current state of the feature.
      */
     private val _state = MutableStateFlow(initialState)
-    public val state: StateFlow<State> = _state.asStateFlow()
-    public val currentState get() = state.value
+    val state: StateFlow<State> = _state.asStateFlow()
+    val currentState get() = state.value
 
     /**
      * Asynchronously sends an action to the reducer in order to update the feature state and trigger any associated
@@ -53,6 +64,10 @@ abstract class FeatureModel<State, Action>(
         }
     }
 
+    /**
+     * Represents a dispatcher function that creates a function which can be invoked to send the given action
+     * @param Action The type of the action.
+     */
     fun interface Dispatcher<Action> {
         operator fun invoke(action: Action): () -> Unit
     }
