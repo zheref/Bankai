@@ -25,8 +25,8 @@ class RepositoryXCTests: XCTestCase {
     
     var cancellables = Set<AnyCancellable>()
     
+    @MainActor
     func testOnlyLocalFetch() {
-        
         var mockedMemorySource = [TestObject]()
         let mockedLocalSource: [TestObject] = [
             .init(id: 1, name: "Dog", updatedAt: nil),

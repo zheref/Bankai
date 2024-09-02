@@ -36,15 +36,15 @@ public class RepoSnapshotFlow<Data>: SnapshotReceiver {
     typealias Receiver = RepoSnapshotFlow
     
     private let subject = ZSubjectOf<RepoSnapshot<Data>, RepoSyncError>()
-    var scheduler: AnySchedulerOf<DispatchQueue> = .main
+    var scheduler: AnySchedulerOf<DispatchQueue> = .global()
     var hasCompleted: Bool = false
     var body: (Receiver) async throws -> Void = { _ in }
     
     lazy var cancellable: AnyCancellable = {
         return subject
-//            .buffer(size: 7, prefetch: .byRequest, whenFull: .dropOldest)
             .receive(on: scheduler)
             .print("zheref")
+            .subscribe(on: DispatchQueue.main)
             .handleEvents(receiveSubscription: { _ in
                 Task { try await self.body(self) }
             }, receiveOutput: { snapshot in
