@@ -6,8 +6,9 @@
 //
 
 import Combine
+import Foundation
 
-enum RepoSyncError: Error {
+public enum RepoSyncError: Error {
     case failedStoring(originalError: Error)
     case failedPushing(originalError: Error)
     
@@ -21,35 +22,57 @@ enum RepoSnapshot<T> {
     case remote(T, String?)
 }
 
-public class RepoSnapshotFlow<Data> {
+public protocol SnapshotReceiver {
+    associatedtype Data
+    
+    func send(local data: Data)
+    func send(remote data: Data, from remoteName: String?)
+    func giveUp()
+    func fail(with error: RepoSyncError)
+}
+
+public class RepoSnapshotFlow<Data>: SnapshotReceiver {
     let onlyLocalExpected: Bool
+    typealias Receiver = RepoSnapshotFlow
     
     private let subject = ZSubjectOf<RepoSnapshot<Data>, RepoSyncError>()
+    var scheduler: AnySchedulerOf<DispatchQueue> = .main
     var hasCompleted: Bool = false
+    var body: (Receiver) async throws -> Void = { _ in }
     
     lazy var cancellable: AnyCancellable = {
-        return subject.sink { completion in
-            self.hasCompleted = true
-            switch completion {
-            case .finished:
-                self.complete()
-            case .failure(let error):
-                self.yieldFailure(error)
-            }
-        } receiveValue: { snapshot in
-            switch snapshot {
-            case .local(let data):
-                self.yieldLocal(data)
-            case .remote(let data, let remoteName):
-                self.yieldRemote(data, remoteName)
-            }
-        }
+        return subject
+//            .buffer(size: 7, prefetch: .byRequest, whenFull: .dropOldest)
+            .receive(on: scheduler)
+            .print("zheref")
+            .handleEvents(receiveSubscription: { _ in
+                Task { try await self.body(self) }
+            }, receiveOutput: { snapshot in
+                print(">>> Received snapshot")
+                switch snapshot {
+                case .local(let data):
+                    print(">>> Flow detected incoming local data")
+                    self.yieldLocal(data)
+                case .remote(let data, let remoteName):
+                    self.yieldRemote(data, remoteName)
+                }
+            }, receiveCompletion: { completion in
+                print(">>> Received completion")
+                self.hasCompleted = true
+                switch completion {
+                case .finished:
+                    self.yieldCompletion()
+                case .failure(let error):
+                    self.yieldFailure(error)
+                }
+            })
+            .sink { _ in } receiveValue: { _ in }
     }()
     
     var yieldLocal: (Data) -> Void = { _ in }
     var yieldRemote: (Data, String?) -> Void = { _, _ in }
     var yieldFailure: (RepoSyncError) -> Void = { _ in }
-    var complete: () -> Void = { }
+    var yieldCompletion: () -> Void = { }
     
     init(onlyLocalExpected: Bool = false) {
         self.onlyLocalExpected = onlyLocalExpected
@@ -57,26 +80,32 @@ public class RepoSnapshotFlow<Data> {
     
     // Send values
     
-    func send(local data: Data) {
+    func run(_ op: @escaping (Receiver) async throws -> Void) 
+        where Receiver: SnapshotReceiver, Receiver.Data == Data {
+        self.body = op
+    }
+    
+    public func send(local data: Data) {
         guard !hasCompleted else { return }
+        print(">>> Will deliver local data")
         subject.send(.local(data))
         if onlyLocalExpected {
             subject.send(completion: .finished)
         }
     }
     
-    func send(remote data: Data, from remoteName: String? = nil) {
+    public func send(remote data: Data, from remoteName: String? = nil) {
         guard !hasCompleted else { return }
         subject.send(.remote(data, remoteName))
         subject.send(completion: .finished)
     }
     
-    func giveUp() {
+    public func giveUp() {
         guard !hasCompleted else { return }
         subject.send(completion: .finished)
     }
     
-    func fail(with error: RepoSyncError) {
+    public func fail(with error: RepoSyncError) {
         guard !hasCompleted else { return }
         subject.send(completion: .failure(error))
     }
@@ -102,7 +131,8 @@ public class RepoSnapshotFlow<Data> {
     }
     
     @discardableResult
-    func flow() -> AnyCancellable {
-        return self.cancellable
+    func onCompletion(_ yield: @escaping () -> Void) -> Self {
+        self.yieldCompletion = yield
+        return self
     }
 }

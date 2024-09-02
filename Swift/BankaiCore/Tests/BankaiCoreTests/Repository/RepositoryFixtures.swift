@@ -8,7 +8,7 @@
 @testable import BankaiCore
 import Foundation
 
-struct TestObject: Traceable {
+struct TestObject: Traceable, Equatable {
     let id: Int
     let name: String
     let updatedAt: Date?
@@ -16,18 +16,19 @@ struct TestObject: Traceable {
 
 struct TestFilter: Filter {
     var onlyLocally: Bool
+    var keywords: String?
 }
 
-class FixtureLocal: ILocal {
+class FixtureLocal: LocalDataSource {
     typealias F = TestFilter
     typealias T = TestObject
     
     var storeFixture: (_ items: [T]) async throws -> Void
-    var retrieveFixture: () async throws -> [T]
+    var retrieveFixture: (F?) async throws -> [T]
     
     init(
         storeFixture: @escaping (_ items: [T]) async throws -> Void,
-        retrieveFixture: @escaping () async throws -> [T]
+        retrieveFixture: @escaping (F?) async throws -> [T]
     ) {
         self.storeFixture = storeFixture
         self.retrieveFixture = retrieveFixture
@@ -41,11 +42,11 @@ class FixtureLocal: ILocal {
     }
     
     func retrieve(filter: TestFilter?) async throws -> [T] {
-        return try await retrieveFixture()
+        return try await retrieveFixture(filter)
     }
 }
 
-class FixtureRemote: IRemote {
+class FixtureRemote: RemoteDataSource {
     typealias F = TestFilter
     typealias T = TestObject
     

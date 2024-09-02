@@ -5,32 +5,38 @@
 //  Created by Sergio Daniel on 1/09/24.
 //
 
-extension Repository where ValueType == Local.ValueType, ValueType == Remote.ValueType, FilterType == Local.FilterType, FilterType == Remote.FilterType {
-    
-    public func fetch(filter: FilterType? = nil) -> RepoSnapshotFlow<[ValueType]> {
-        let onlyLocally = filter?.onlyLocally ?? false
+import Combine
+import Foundation
+
+extension Repository 
+    where ValueType == Local.ValueType, ValueType == Remote.ValueType,
+            FilterType == Local.FilterType, FilterType == Remote.FilterType
+{
+
+    ///
+    ///
+    public func fetch(filter: FilterType? = nil, on scheduler: AnySchedulerOf<DispatchQueue> = .global()) -> RepoSnapshotFlow<[ValueType]> {
+        let onlyLocally = filter?.onlyLocally ?? remotes.isEmpty
         let flow = RepoSnapshotFlow<[ValueType]>(onlyLocalExpected: onlyLocally)
+        flow.scheduler = scheduler
         
-        Task {
+        flow.run { receiver in
             var localSnapshot: [ValueType]?
             
             do {
                 let snapshot = try await local.retrieve(filter: filter)
-                flow.send(local: snapshot)
+                print(">>> Got \(snapshot.count) results from local")
+                receiver.send(local: snapshot)
             } catch {
-                flow.fail(with: .failedRetrieving(originalError: error))
-            }
-            
-            if onlyLocally {
-                return
+                receiver.fail(with: .failedRetrieving(originalError: error))
             }
             
             for remote in remotes {
                 do {
                     let snapshot = try await remote.pull(filter: filter)
-                    flow.send(remote: snapshot)
+                    receiver.send(remote: snapshot)
                 } catch {
-                    
+                    receiver.fail(with: .failedPulling(originalError: error))
                 }
             }
         }
