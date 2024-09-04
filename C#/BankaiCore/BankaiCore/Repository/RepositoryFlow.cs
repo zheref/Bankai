@@ -75,31 +75,28 @@ public class RepositoryFlow<Data>: SnapshotReceiver<Data>
     /// Retrieves cancellable instance of the flow and registers handlers
     /// for each snapshot type.
     /// </summary>
-    public IDisposable cancellable
+    public IDisposable run()
     {
-        get
-        {
-            var disposable = subject
-                //.ObserveOn(_scheduler ?? Scheduler.Default)
-                .SubscribeOn(_scheduler ?? Scheduler.Default)
-                .Subscribe(handleSnapshot, exception =>
-                {
-                    this.yieldFailure(
-                        new RepoSyncException(exception.Message)
-                    );
-                }, () =>
-                {
-                    Console.WriteLine($">>> Completed on Thread: {Thread.CurrentThread.Name}");
-                    this.hasCompleted = true;
-                    this.yieldCompletion();
-                });
-            _ = _scheduler!.Schedule(() =>
+        var disposable = subject
+            //.ObserveOn(_scheduler ?? Scheduler.Default)
+            .SubscribeOn(_scheduler ?? Scheduler.Default)
+            .Subscribe(handleSnapshot, exception =>
             {
-                this.body(this);
+                this.yieldFailure(
+                    new RepoSyncException(exception.Message)
+                );
+            }, () =>
+            {
+                Console.WriteLine($">>> Completed on Thread: {Thread.CurrentThread.Name}");
+                this.hasCompleted = true;
+                this.yieldCompletion();
             });
-            this._disposable = disposable;
-            return this._disposable;
-        }
+        _ = _scheduler!.Schedule(() =>
+        {
+            this.body(this);
+        });
+        this._disposable = disposable;
+        return this._disposable;
     }
 
     private void handleSnapshot(RepoSnapshot<Data> snapshot)

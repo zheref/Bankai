@@ -45,7 +45,7 @@ namespace BankaiCoreTests
                     hasCompleted = true;
                 });
 
-            var cancellable = sut.cancellable;
+            var cancellable = sut.run();
             testScheduler.AdvanceBy(1.Seconds().Ticks);
             await Task.Delay(1.Seconds());
 
