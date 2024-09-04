@@ -29,8 +29,19 @@ public abstract record class RepoSnapshot<T>
 /// <typeparam name="T">The type of object you expect to send</typeparam>
 public interface SnapshotReceiver<in T>
 {
+    /// <summary>
+    /// Sends a local snapshot to the flow so that subscribers are notified.
+    /// </summary>
+    /// <param name="value">The value to be received by the flow</param>
     void sendLocal(T value);
-    void sendRemote(T value, string? remoteName);
+
+    /// <summary>
+    /// Sends a remote snapshot to the flow so that subscribers are notified.
+    /// </summary>
+    /// <param name="value">The value to be received by the flow</param>
+    /// <param name="remoteName">The name of the remote sending the new value</param>
+    /// <param name="shouldHold">Determines whether the flow should hold its completion or not</param>
+    void sendRemote(T value, string? remoteName, bool shouldHold = false);
     void giveUp();
     void fail(RepoSyncException e);
 }
@@ -161,11 +172,13 @@ public class RepositoryFlow<Data>: SnapshotReceiver<Data>
     /// </summary>
     /// <param name="value">The value to be received by the flow</param>
     /// <param name="remoteName">The name of the remote sending the new value</param>
-    public void sendRemote(Data value, string? remoteName)
+    /// <param name="shouldHold">Determines whether the flow should hold its completion or not</param>
+    public void sendRemote(Data value, string? remoteName, bool shouldHold = false)
     {
         if (hasCompleted) return;
         subject.OnNext(new RepoSnapshot<Data>.Remote(value, remoteName));
-        subject.OnCompleted();
+        if (!shouldHold)
+            subject.OnCompleted();
     }
 
     public void giveUp()
