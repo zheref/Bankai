@@ -18,12 +18,12 @@ extension Repository
     public func fetch(
         filter: FilterType? = nil,
         on scheduler: AnySchedulerOf<DispatchQueue> = .global()
-    ) -> RepoSnapshotFlow<[ValueType]> {
+    ) -> RepositoryFlow<[ValueType]> {
         let onlyLocally = filter?.onlyLocally ?? remotes.isEmpty
-        let flow = RepoSnapshotFlow<[ValueType]>(onlyLocalExpected: onlyLocally)
-        flow.scheduler = scheduler
-        
-        flow.run { receiver in
+        let flow = RepositoryFlow<[ValueType]>(
+            onlyLocalExpected: onlyLocally,
+            scheduler: scheduler
+        ) { receiver in
             var snapshot: [ValueType] = []
             
             do {

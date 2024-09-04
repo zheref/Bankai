@@ -39,20 +39,34 @@ public protocol SnapshotReceiver {
 public class RepositoryFlow<Data>: SnapshotReceiver {
     // MARK: - Subtypes
     typealias Receiver = RepositoryFlow
+    typealias Operation = (Receiver) async throws -> Void
+    
+    // MARK: - Instance Members
     
     let onlyLocalExpected: Bool
-    var scheduler: AnySchedulerOf<DispatchQueue> = .global()
+    
     
     // Whether the flow has completed already or not.
     var hasCompleted: Bool = false
     
+    /// The operation block to be run when the flow is started.
+    /// The body of the operation to be performed by the flow which should
+    /// deliver values across time in order to flow to successfully complete.
     private var body: (Receiver) async throws -> Void = { _ in }
+    
+    private let scheduler: AnySchedulerOf<DispatchQueue>
     
     /// Subject holding flow of snapshots over time until it completes.
     private let subject = SubjectOf<RepoSnapshot<Data>, RepoSyncError>()
     
+    private var _cancellable: AnyCancellable!
+    
+    /// Retrieves cancellable instance of the flow and registers handlers
+    /// for each snapshot type.
+    /// It also keeps an instance of cancellable in order to control flow
+    /// from inside.
     func run() -> AnyCancellable {
-        subject
+        _cancellable = subject
             .receive(on: scheduler)
             .print("zheref")
             .subscribe(on: DispatchQueue.main)
@@ -78,6 +92,7 @@ public class RepositoryFlow<Data>: SnapshotReceiver {
                 }
             })
             .sink { _ in } receiveValue: { _ in }
+        return _cancellable
     }
     
     var yieldLocal: (Data) -> Void = { _ in }
@@ -85,17 +100,31 @@ public class RepositoryFlow<Data>: SnapshotReceiver {
     var yieldFailure: (RepoSyncError) -> Void = { _ in }
     var yieldCompletion: () -> Void = { }
     
-    init(onlyLocalExpected: Bool = false) {
+    // MARK: Constructors
+    
+    /// Creates a new instance of RepositoryFlow.
+    /// Registers the operation to be run when the flow is started.
+    /// This operation block will be responsible for emitting new snapshots
+    /// or events to the flow.
+    /// - Parameters:
+    ///     - onlyLocalExpected: Whether the flow will only expect a 
+    ///     local snapshot or also expect remote snapshots.
+    ///     - scheduler: The scheduler where the flow should operate.
+    ///     - operation: Async operation block taking a receiver handler
+    ///     to send new snapshots/events with.
+    init(onlyLocalExpected: Bool = false,
+         scheduler: AnySchedulerOf<DispatchQueue> = .global(),
+         _ operation: @escaping Operation) {
         self.onlyLocalExpected = onlyLocalExpected
+        self.scheduler = scheduler
+        self.body = operation
     }
     
-    // Send values
+    // MARK: - Sending values
     
-    func run(_ op: @escaping (Receiver) async throws -> Void) 
-        where Receiver: SnapshotReceiver, Receiver.Data == Data {
-        self.body = op
-    }
-    
+    /// Sends a local snapshot to the flow so that subscribers are notified.
+    /// - Parameters:
+    ///     - local: The snapshot of data to send to the flow as local.
     public func send(local data: Data) {
         guard !hasCompleted else { return }
         print(">>> Will deliver local data")
@@ -105,6 +134,10 @@ public class RepositoryFlow<Data>: SnapshotReceiver {
         }
     }
     
+    /// Sends a remote snapshot to the flow so that subscribers are notified.
+    /// - Parameters:
+    ///     - remote: The value to be received by the flow.
+    ///     - from: The name of the remote sending the new value.
     public func send(remote data: Data, from remoteName: String? = nil) {
         guard !hasCompleted else { return }
         subject.send(.remote(data, remoteName))

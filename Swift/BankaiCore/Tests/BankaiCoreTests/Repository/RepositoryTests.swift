@@ -78,8 +78,8 @@ class RepositoryXCTests: XCTestCase {
                 expectation2.fulfill()
             }
         
-        flow.cancellable.store(in: &cancellables)
-         wait(for: [expectation1, expectation2], timeout: 1.0)
+        let cancellable = flow.run()
+        wait(for: [expectation1, expectation2], timeout: 1.0)
         
         // Then
         XCTAssertFalse(remoteCalled)
@@ -87,6 +87,8 @@ class RepositoryXCTests: XCTestCase {
         XCTAssertEqual(mockedMemorySource.first, mockedLocalSource.first)
         XCTAssertEqual(mockedMemorySource.last, mockedLocalSource.last)
         XCTAssertTrue(flow.hasCompleted)
+        
+        cancellable.cancel()
     }
     
     @MainActor
@@ -168,7 +170,7 @@ class RepositoryXCTests: XCTestCase {
                 expectation3.fulfill()
             }
         
-        flow.cancellable.store(in: &cancellables)
+        flow.run().store(in: &cancellables)
         
         // Wait
         wait(for: [expectation1], timeout: 1.0)

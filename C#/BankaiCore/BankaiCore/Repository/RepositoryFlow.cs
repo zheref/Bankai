@@ -66,6 +66,11 @@ public class RepositoryFlow<Data>: SnapshotReceiver<Data>
     private event Action<RepoSyncException> yieldFailure = e => { };
     private event Action yieldCompletion = () => { };
 
+    /// <summary>
+    /// The operation block to be run when the flow is started.
+    /// The body of the operation to be performed by the flow which should
+    /// deliver values across time in order to flow to successfully complete.
+    /// </summary>
     private event Operation body = receiver => Task.Delay(0);
 
     private readonly IScheduler _scheduler;
@@ -109,7 +114,7 @@ public class RepositoryFlow<Data>: SnapshotReceiver<Data>
                 break;
             case RepoSnapshot<Data>.Remote castedSnapshot:
                 this.yieldRemote(
-                    castedSnapshot.data, 
+                    castedSnapshot.data,
                     castedSnapshot.remoteName
                 );
                 break;
@@ -139,7 +144,7 @@ public class RepositoryFlow<Data>: SnapshotReceiver<Data>
     #region Sending values
 
     /// <summary>
-    /// Sends a local snapshot to the flow.
+    /// Sends a local snapshot to the flow so that subscribers are notified.
     /// </summary>
     /// <param name="value">The value to be received by the flow</param>
     public void sendLocal(Data value)
@@ -152,7 +157,7 @@ public class RepositoryFlow<Data>: SnapshotReceiver<Data>
     }
 
     /// <summary>
-    /// Sends a remote snapshot to the flow.
+    /// Sends a remote snapshot to the flow so that subscribers are notified.
     /// </summary>
     /// <param name="value">The value to be received by the flow</param>
     /// <param name="remoteName">The name of the remote sending the new value</param>

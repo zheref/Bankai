@@ -49,7 +49,7 @@ public protocol Repository: DataSource {
     
     init(local: Local)
     
-    func fetch(filter: FilterType?, on scheduler: AnySchedulerOf<DispatchQueue>) -> RepoSnapshotFlow<[ValueType]>
+    func fetch(filter: FilterType?, on scheduler: AnySchedulerOf<DispatchQueue>) -> RepositoryFlow<[ValueType]>
     func save(_ items: [ValueType], andAttemptToPush shouldAttemptToPush: Bool) async throws
     
     mutating func add(remote: Remote)
