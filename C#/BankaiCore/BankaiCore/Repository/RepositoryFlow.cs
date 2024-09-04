@@ -1,19 +1,25 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
 using System.Threading.Tasks;
 using System.Reactive;
 using System.Reactive.Concurrency;
 using System.Reactive.Linq;
 using System.Reactive.Subjects;
-using Microsoft.VisualBasic.FileIO;
 
 namespace BankaiCore.Repository;
 
 #region Support Types
 
-public class RepoSyncException(string message) : Exception(message) { }
+public abstract class RepoSyncException(string message) : Exception(message)
+{
+    public sealed class Generic(Exception subException)
+        : RepoSyncException(subException.Message);
+    public sealed class FailedRetrieving(Exception subException)
+        : RepoSyncException(subException.Message);
+    public sealed class FailedPulling(Exception subException)
+        : RepoSyncException(subException.Message);
+}
 
 public abstract record class RepoSnapshot<T>
 {
@@ -99,7 +105,8 @@ public class RepositoryFlow<Data>: SnapshotReceiver<Data>
             .Subscribe(handleSnapshot, exception =>
             {
                 this.yieldFailure(
-                    new RepoSyncException(exception.Message)
+                    exception as RepoSyncException 
+                        ?? new RepoSyncException.Generic(exception)
                 );
             }, () =>
             {
