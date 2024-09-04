@@ -26,7 +26,9 @@ public protocol SnapshotReceiver {
     associatedtype Data
     
     func send(local data: Data)
-    func send(remote data: Data, from remoteName: String?)
+    func send(remote data: Data,
+              from remoteName: String?,
+              holdIf shouldHold: Bool)
     func giveUp()
     func fail(with error: RepoSyncError)
 }
@@ -138,10 +140,16 @@ public class RepositoryFlow<Data>: SnapshotReceiver {
     /// - Parameters:
     ///     - remote: The value to be received by the flow.
     ///     - from: The name of the remote sending the new value.
-    public func send(remote data: Data, from remoteName: String? = nil) {
+    ///     - holdIf: Boolean determining whether the flow shold hold its
+    ///     completion or not.
+    public func send(remote data: Data, 
+                     from remoteName: String? = nil,
+                     holdIf shouldHold: Bool = false) {
         guard !hasCompleted else { return }
         subject.send(.remote(data, remoteName))
-        subject.send(completion: .finished)
+        if !shouldHold {
+            subject.send(completion: .finished)
+        }
     }
     
     public func giveUp() {

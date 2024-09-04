@@ -33,9 +33,14 @@ public protocol RemoteDataSource: DataSource {
     associatedtype ValueType: Traceable
     
     static var name: String { get }
+    var label: String { get }
     
     func pull(filter: FilterType?) async throws -> [ValueType]
     func push(_ items: [ValueType]) async throws
+}
+
+extension RemoteDataSource {
+    var label: String { Self.name }
 }
 
 public protocol Repository: DataSource {

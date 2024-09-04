@@ -34,12 +34,16 @@ extension Repository
                 receiver.fail(with: .failedRetrieving(originalError: error))
             }
             
-            for remote in remotes {
+            for (index, remote) in remotes.enumerated() {
                 do {
                     let remoteSnapshot = try await remote.pull(filter: filter)
                     resolveMostRecentData(fromLocal: &snapshot,
                                           andRemote: remoteSnapshot)
-                    receiver.send(remote: snapshot)
+                    receiver.send(
+                        remote: snapshot,
+                        from: remote.label,
+                        holdIf: index != (remotes.count - 1)
+                    )
                 } catch {
                     receiver.fail(with: .failedPulling(originalError: error))
                 }

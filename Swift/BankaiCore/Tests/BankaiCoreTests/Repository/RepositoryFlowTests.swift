@@ -25,7 +25,7 @@ struct RepositoryFlowTests {
         // Given
         let sut = RepositoryFlow<Int>(onlyLocalExpected: true,
                                       scheduler: testScheduler) { receiver in
-            try await Task.sleep(seconds: 0.5)
+            try await Task.sleep(for: 0.5)
             receiver.send(local: 1)
         }
         
@@ -42,7 +42,7 @@ struct RepositoryFlowTests {
             }
             
             cancellable = sut.run()
-            try! await Task.sleep(seconds: 1)
+            try! await Task.sleep(for: 1.seconds)
         }
         
         // Then
@@ -66,10 +66,10 @@ struct RepositoryFlowTests {
         // Given
         let sut = RepositoryFlow<Int>(onlyLocalExpected: false,
                                       scheduler: testScheduler) { receiver in
-            try await Task.sleep(seconds: 0.5)
+            try await Task.sleep(for: 0.5)
             receiver.send(local: 1)
             
-            try await Task.sleep(seconds: 0.5)
+            try await Task.sleep(for: 0.5)
             receiver.send(remote: 2, from: "api")
         }
         
@@ -86,7 +86,7 @@ struct RepositoryFlowTests {
             }
             
             cancellable = sut.run()
-            try! await Task.sleep(seconds: 2)
+            try! await Task.sleep(for: 2.seconds)
         }
         
         // Then

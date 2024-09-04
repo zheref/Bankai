@@ -52,13 +52,17 @@ class FixtureRemote: RemoteDataSource {
     
     static var name = "test-remote"
     
+    var label: String
+    
     var pushFixture: (_ items: [T]) async throws -> Void
     var pullFixture: (_ filter: FilterType?) async throws -> [T]
     
     init(
+        label: String,
         pushFixture: @escaping (_ items: [T]) async throws -> Void,
         pullFixture: @escaping (_ filter: FilterType?) async throws -> [T]
     ) {
+        self.label = label
         self.pushFixture = pushFixture
         self.pullFixture = pullFixture
     }
@@ -66,7 +70,7 @@ class FixtureRemote: RemoteDataSource {
     func prepare() {}
     
     func pull(filter: TestFilter?) async throws -> [T] {
-        try await Task.sleep(seconds: 0.5)
+        try await Task.sleep(for: 0.5)
         return try await self.pullFixture(filter)
     }
     
