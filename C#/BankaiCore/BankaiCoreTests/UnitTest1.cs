@@ -20,6 +20,11 @@ namespace BankaiCoreTests
 
             // Given
             var sut = new RepositoryFlow<int>(
+                operation: async receiver =>
+                {
+                    await Task.Delay(1);
+                    receiver.sendLocal(1);
+                },
                 onlyLocalExpected: true, 
                 scheduler: testScheduler
             );
@@ -39,11 +44,6 @@ namespace BankaiCoreTests
                 {
                     hasCompleted = true;
                 });
-
-            sut.run(async receiver => {
-                await Task.Delay(1);
-                receiver.sendLocal(1);
-            });
 
             var cancellable = sut.cancellable;
             testScheduler.AdvanceBy(1.Seconds().Ticks);

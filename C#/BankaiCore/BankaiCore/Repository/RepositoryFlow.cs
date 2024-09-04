@@ -45,6 +45,10 @@ public interface SnapshotReceiver<in T>
 /// <typeparam name="Data">The type of data to manage</typeparam>
 public class RepositoryFlow<Data>: SnapshotReceiver<Data>
 {
+    #region Subtypes
+    public delegate Task Operation(SnapshotReceiver<Data> receiver);
+    #endregion
+
     private bool onlyLocalExpected { get; set; }
 
     /// <summary>
@@ -119,29 +123,21 @@ public class RepositoryFlow<Data>: SnapshotReceiver<Data>
 
     /// <summary>
     /// Creates a new instance of RepositoryFlow.
-    /// </summary>
-    /// <param name="onlyLocalExpected">Whether the flow will only expect a local snapshot or also expect remote snapshots</param>
-    /// <param name="scheduler">The scheduler where the flow should operate</param>
-    public RepositoryFlow(bool onlyLocalExpected = false, IScheduler? scheduler = null)
-    {
-        this.onlyLocalExpected = onlyLocalExpected;
-        _scheduler = scheduler ?? Scheduler.Default;
-    }
-
-    #endregion
-
-    public delegate Task Operation(SnapshotReceiver<Data> receiver);
-
-    /// <summary>
     /// Registers the operation to be run when the flow is started.
     /// This operation block will be responsible for emitting new snapshots
     /// or events to the flow.
     /// </summary>
     /// <param name="operation">Async operation block taking a receiver handler to send new snapshots/events with</param>
-    public void run(Operation operation)
+    /// <param name="onlyLocalExpected">Whether the flow will only expect a local snapshot or also expect remote snapshots</param>
+    /// <param name="scheduler">The scheduler where the flow should operate</param>
+    public RepositoryFlow(Operation operation, bool onlyLocalExpected = false, IScheduler? scheduler = null)
     {
+        this.onlyLocalExpected = onlyLocalExpected;
+        _scheduler = scheduler ?? Scheduler.Default;
         this.body = operation;
     }
+
+    #endregion
 
     #region Sending values
 
