@@ -25,6 +25,8 @@ class RepositoryXCTests: XCTestCase {
     
     var cancellables = Set<AnyCancellable>()
     
+    // It's important to run test on MainActor to ensure the
+    // flow falls back on it.
     @MainActor
     func testOnlyLocalFetch() {
         var mockedMemorySource = [TestObject]()

@@ -30,9 +30,9 @@ public typealias ZFuture<T> = () async throws -> T
 public typealias ZYielderOf<T, E: Error> = ((Result<T, E>) -> Void) -> Void
 
 // Void to * values
-public typealias ZFlowOf<T, E: Error> = AnyPublisher<T, E>
-public typealias ZSubjectOf<T, E: Error> = PassthroughSubject<T, E>
-public typealias ZStreamOf<T, E: Error> = AsyncThrowingStream<T, E>
+public typealias FlowOf<T, E: Error> = AnyPublisher<T, E>
+public typealias SubjectOf<T, E: Error> = PassthroughSubject<T, E>
+public typealias StreamOf<T, E: Error> = AsyncThrowingStream<T, E>
 
 extension PassthroughSubject {
     func eraseToAnySubscriber() -> AnySubscriber<Output, Failure> {

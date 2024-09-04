@@ -31,17 +31,28 @@ public protocol SnapshotReceiver {
     func fail(with error: RepoSyncError)
 }
 
-public class RepoSnapshotFlow<Data>: SnapshotReceiver {
+/// Represents a flow of snapshots of the given data type. Intended
+/// to retrieve data from a local source expecting a potential remote
+/// snapshot to contrast data and decide which one to keep.
+/// - Parameters:
+///     - Data: The type of data to manage
+public class RepositoryFlow<Data>: SnapshotReceiver {
+    // MARK: - Subtypes
+    typealias Receiver = RepositoryFlow
+    
     let onlyLocalExpected: Bool
-    typealias Receiver = RepoSnapshotFlow
-    
-    private let subject = ZSubjectOf<RepoSnapshot<Data>, RepoSyncError>()
     var scheduler: AnySchedulerOf<DispatchQueue> = .global()
-    var hasCompleted: Bool = false
-    var body: (Receiver) async throws -> Void = { _ in }
     
-    lazy var cancellable: AnyCancellable = {
-        return subject
+    // Whether the flow has completed already or not.
+    var hasCompleted: Bool = false
+    
+    private var body: (Receiver) async throws -> Void = { _ in }
+    
+    /// Subject holding flow of snapshots over time until it completes.
+    private let subject = SubjectOf<RepoSnapshot<Data>, RepoSyncError>()
+    
+    func run() -> AnyCancellable {
+        subject
             .receive(on: scheduler)
             .print("zheref")
             .subscribe(on: DispatchQueue.main)
@@ -67,7 +78,7 @@ public class RepoSnapshotFlow<Data>: SnapshotReceiver {
                 }
             })
             .sink { _ in } receiveValue: { _ in }
-    }()
+    }
     
     var yieldLocal: (Data) -> Void = { _ in }
     var yieldRemote: (Data, String?) -> Void = { _, _ in }
