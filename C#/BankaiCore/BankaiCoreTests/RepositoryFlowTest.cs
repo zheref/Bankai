@@ -23,7 +23,7 @@ namespace BankaiCoreTests
 
             // Given
             var sut = new RepositoryFlow<int>(
-                operation: async receiver =>
+                async receiver =>
                 {
                     await Task.Delay(1);
                     receiver.sendLocal(1);
@@ -66,7 +66,7 @@ namespace BankaiCoreTests
 
             // Given
             var sut = new RepositoryFlow<int>(
-                operation: async receiver =>
+                async receiver =>
                 {
                     await Task.Delay(500);
                     receiver.sendLocal(1);

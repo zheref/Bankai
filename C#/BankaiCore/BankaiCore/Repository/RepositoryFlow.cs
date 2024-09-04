@@ -57,7 +57,7 @@ public interface SnapshotReceiver<in T>
 public class RepositoryFlow<Data>: SnapshotReceiver<Data>
 {
     #region Subtypes
-    public delegate Task Operation(SnapshotReceiver<Data> receiver);
+    public delegate Task AsyncBlock(SnapshotReceiver<Data> receiver);
     #endregion
 
     private bool onlyLocalExpected { get; set; }
@@ -82,7 +82,7 @@ public class RepositoryFlow<Data>: SnapshotReceiver<Data>
     /// The body of the operation to be performed by the flow which should
     /// deliver values across time in order to flow to successfully complete.
     /// </summary>
-    private event Operation body = receiver => Task.Delay(0);
+    private event AsyncBlock body;
 
     private readonly IScheduler _scheduler;
     private IDisposable _disposable;
@@ -140,14 +140,14 @@ public class RepositoryFlow<Data>: SnapshotReceiver<Data>
     /// This operation block will be responsible for emitting new snapshots
     /// or events to the flow.
     /// </summary>
-    /// <param name="operation">Async operation block taking a receiver handler to send new snapshots/events with</param>
+    /// <param name="body">Async block taking a receiver handler to send new snapshots/events with</param>
     /// <param name="onlyLocalExpected">Whether the flow will only expect a local snapshot or also expect remote snapshots</param>
     /// <param name="scheduler">The scheduler where the flow should operate</param>
-    public RepositoryFlow(Operation operation, bool onlyLocalExpected = false, IScheduler? scheduler = null)
+    public RepositoryFlow(AsyncBlock body, bool onlyLocalExpected = false, IScheduler? scheduler = null)
     {
         this.onlyLocalExpected = onlyLocalExpected;
         _scheduler = scheduler ?? Scheduler.Default;
-        this.body = operation;
+        this.body = body;
     }
 
     #endregion
