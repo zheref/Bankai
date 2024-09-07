@@ -10,7 +10,7 @@ namespace BankaiCore.Repository;
 
 public interface Filter
 {
-    bool onlyLocally { get; set; }
+    bool? onlyLocally { get; set; }
 }
 
 public interface Identifiable

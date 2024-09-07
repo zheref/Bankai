@@ -18,10 +18,10 @@ public struct TestObject: Traceable
 
 struct TestFilter : Filter
 {
-    public bool onlyLocally { get; set; }
+    public bool? onlyLocally { get; set; }
     public string? keywords {  get; set; }
 
-    public static TestFilter none => new() { onlyLocally = false };
+    public static TestFilter none => new() { onlyLocally = null };
 }
 
 internal class FixtureLocal<T, F>: LocalDataSource<T, F>
