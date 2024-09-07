@@ -15,7 +15,7 @@ public interface Filter
 
 public interface Identifiable
 {
-    string id { get; set; }
+    string id { get; init; }
 }
 
 public interface Traceable: Identifiable
@@ -52,8 +52,8 @@ public interface Repository<T, F>: DataSource<T, F>
     where T : Traceable
     where F : Filter
 {
-    LocalDataSource<T, F> local { get; set; }
-    List<RemoteDataSource<T, F>> remotes { get; set; }
+    LocalDataSource<T, F> local { get; init; }
+    List<RemoteDataSource<T, F>> remotes { get; }
 
     /// <summary>
     /// Fetch elements of type filtering by [filter]
@@ -143,5 +143,12 @@ public interface Repository<T, F>: DataSource<T, F>
         }
     }
 
-    Task save(IEnumerable<T> items, bool shouldAttemptToPush);
+    // TODO: Provide default implementation
+    Task save(IEnumerable<T> items, bool shouldAttemptToPush)
+    {
+        return new Task(() => { });
+    }
+
+    void addRemote(RemoteDataSource<T, F> remote)
+        => remotes.Add(remote);
 }

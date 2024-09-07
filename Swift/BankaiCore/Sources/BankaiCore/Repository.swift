@@ -57,5 +57,6 @@ public protocol Repository: DataSource {
     func fetch(filter: FilterType?, on scheduler: AnySchedulerOf<DispatchQueue>) -> RepositoryFlow<[ValueType]>
     func save(_ items: [ValueType], andAttemptToPush shouldAttemptToPush: Bool) async throws
     
+    // This should provide implementation at protocol/interface level
     mutating func add(remote: Remote)
 }

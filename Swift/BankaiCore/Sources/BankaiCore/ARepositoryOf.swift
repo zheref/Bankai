@@ -23,6 +23,7 @@ public struct ARepositoryOf<V, F, L, R>: Repository
         self.remotes = []
     }
     
+    // TODO: This should be async
     public mutating func prepare() {
         local.prepare()
         
