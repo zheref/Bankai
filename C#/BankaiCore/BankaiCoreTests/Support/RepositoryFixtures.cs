@@ -1,4 +1,5 @@
 ﻿using BankaiCore.Repository;
+using Microsoft.Reactive.Testing;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -7,7 +8,7 @@ using System.Threading.Tasks;
 
 namespace BankaiCoreTests.Support;
 
-internal struct TestObject: Traceable
+public struct TestObject: Traceable
 {
     public string id { get; init; }
     public string name { get; init; }
@@ -19,17 +20,18 @@ struct TestFilter : Filter
 {
     public bool onlyLocally { get; set; }
     public string? keywords {  get; set; }
+
+    public static TestFilter none => new() { onlyLocally = false };
 }
 
 internal class FixtureLocal<T, F>: LocalDataSource<T, F>
     where T : Traceable
     where F : Filter
 {
-    event Func<List<T>, Task> storeFixture = (list) => Task.CompletedTask;
-    event Func<F?, Task<List<T>>> retrieveFixture 
-        = (filter) => Task.FromResult(new List<T>());
+    event Func<List<T>, Task> storeFixture;
+    event Func<F?, Task<List<T>>> retrieveFixture;
 
-    FixtureLocal(
+    internal FixtureLocal(
         Func<List<T>, Task> storeFixture, 
         Func<F?, Task<List<T>>> retrieveFixture
     )

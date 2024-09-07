@@ -61,7 +61,10 @@ public interface Repository<T, F>: DataSource<T, F>
     /// <param name="filter"></param>
     /// <param name="scheduler"></param>
     /// <returns></returns>
-    RepositoryFlow<List<T>> fetch(F? filter, IScheduler? scheduler = null)
+    public RepositoryFlow<List<T>> fetch(
+        F? filter, 
+        IScheduler? scheduler = null
+    )
     {
         scheduler = scheduler ?? Scheduler.Default;
         var onlyLocally = filter?.onlyLocally ?? remotes.Count == 0;
