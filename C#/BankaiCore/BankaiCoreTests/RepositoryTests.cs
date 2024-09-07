@@ -31,30 +31,30 @@ public class RepositoryTests
         };
         var remoteCalled = false;
 
+        async Task<List<TestObject>> retrieveFixtureMethod(TestFilter filter)
+        {
+            return await Task.Run(() =>
+            {
+                if (filter is { keywords: { } uKeywords } testFilter)
+                    return mockedLocalSource
+                        .Where(item => item.name.ToLower()
+                        .Contains(uKeywords.ToLower() ?? ""))
+                        .ToList();
+                else
+                    return mockedLocalSource;
+            });
+        }
+
         // Given
         Repository<TestObject, TestFilter> repository 
             = new ARepositoryOf<TestObject, TestFilter>(
                 local: new FixtureLocal<TestObject, TestFilter>(
-                    storeFixture: async (items) =>
+                    storeFixture: (items) =>
                     {
                         mockedLocalSource.AddRange(items);
+                        return Task.CompletedTask;
                     },
-                    retrieveFixture: async filter =>
-                    {
-                        if (filter is TestFilter
-                            {
-                                keywords: String uKeywords
-                            } testFilter)
-                            return mockedLocalSource
-                                .Where(item => 
-                                    item.name
-                                    .ToLower()
-                                    .Contains(uKeywords.ToLower() ?? "")
-                                )
-                                .ToList();
-                        else
-                            return mockedLocalSource;
-                    }
+                    retrieveFixture: retrieveFixtureMethod
                 )
             );
 
@@ -67,21 +67,21 @@ public class RepositoryTests
 
         // When
         var flow = repository.fetch(TestFilter.none, scheduler: testScheduler)
-                                    .onLocal(results =>
-                                    {
-                                        localResultsReceived = true;
-                                        mockedMemorySource.Clear();
-                                        mockedMemorySource.AddRange(results);
-                                    })
-                                    .onRemote((results, label) =>
-                                    {
-                                        remoteCalled = true;
-                                        remoteResultsReceived = true;
-                                    })
-                                    .onCompletion(() =>
-                                    {
-                                        completionReceived = true;
-                                    });
+                        .onLocal(results =>
+                        {
+                            localResultsReceived = true;
+                            mockedMemorySource.Clear();
+                            mockedMemorySource.AddRange(results);
+                        })
+                        .onRemote((results, label) =>
+                        {
+                            remoteCalled = true;
+                            remoteResultsReceived = true;
+                        })
+                        .onCompletion(() =>
+                        {
+                            completionReceived = true;
+                        });
 
         var cancellable = flow.run();
         testScheduler.AdvanceBy(1.Seconds().Ticks);

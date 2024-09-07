@@ -33,7 +33,7 @@ internal class FixtureLocal<T, F>: LocalDataSource<T, F>
 
     internal FixtureLocal(
         Func<List<T>, Task> storeFixture, 
-        Func<F?, Task<List<T>>> retrieveFixture
+        Func<F, Task<List<T>>> retrieveFixture
     )
     {
         this.storeFixture = storeFixture;
