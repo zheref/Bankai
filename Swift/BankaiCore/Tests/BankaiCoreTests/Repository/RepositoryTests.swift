@@ -168,7 +168,7 @@ class RepositoryXCTests: XCTestCase {
         XCTAssertEqual(mockedMemorySource.count, mockedLocalSource.count)
         XCTAssertEqual(mockedMemorySource.first, mockedLocalSource.first)
         XCTAssertEqual(mockedMemorySource.last, mockedLocalSource.last)
-        XCTAssertTrue(flow.hasCompleted)
+        XCTAssertTrue(flow.hasCompleted )
         
         cancellable.cancel()
     }
