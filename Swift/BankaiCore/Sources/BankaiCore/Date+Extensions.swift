@@ -8,6 +8,8 @@
 import Foundation
 
 extension Date {
+    static var now: Date { Date() }
+    
     static func fromDateComponents(year: UInt16, month: UInt8, day: UInt8) -> Date? {
         var components = DateComponents()
 
