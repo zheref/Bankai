@@ -8,9 +8,9 @@
 import Foundation
 
 extension Date {
-    static var now: Date { Date() }
+    public static var now: Date { Date() }
     
-    static func fromDateComponents(year: UInt16, month: UInt8, day: UInt8) -> Date? {
+    public static func fromDateComponents(year: UInt16, month: UInt8, day: UInt8) -> Date? {
         var components = DateComponents()
 
         components.year = Int(year)
@@ -20,7 +20,7 @@ extension Date {
         return Calendar.current.date(from: components)
     }
 
-    static func fromTimeComponents(hours: UInt8, minutes: UInt8, seconds: UInt8) -> Date? {
+    public static func fromTimeComponents(hours: UInt8, minutes: UInt8, seconds: UInt8) -> Date? {
         var components = DateComponents()
 
         components.hour = Int(hours)
@@ -30,7 +30,7 @@ extension Date {
         return Calendar.current.date(from: components)
     }
 
-    static var endOfDay: Date {
+    public static var endOfDay: Date {
         var components = Calendar.current.dateComponents([.year, .month, .day], from: Date())
         components.hour = 23
         components.minute = 59
@@ -40,7 +40,7 @@ extension Date {
 }
 
 extension DateComponents {
-    var asDate: Date? {
+    public var asDate: Date? {
         Calendar.current.date(from: self)
     }
 }

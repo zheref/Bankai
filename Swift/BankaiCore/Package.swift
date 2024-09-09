@@ -19,12 +19,20 @@ let package = Package(
         // Targets are the basic building blocks of a package, defining a module or a test suite.
         // Targets can depend on other targets in this package and products from dependencies.
         .target(
-            name: "BankaiCore"
+            name: "BankaiCore",
+            swiftSettings: [
+                .swiftLanguageMode(.v5),
+                .enableExperimentalFeature("StrictConcurrency", .when(platforms: []))
+            ]
 //            dependencies: ["CombineSchedulers"]
         ),
         .testTarget(
             name: "BankaiCoreTests",
-            dependencies: ["BankaiCore"]
+            dependencies: ["BankaiCore"],
+            swiftSettings: [
+                .swiftLanguageMode(.v5),
+                .enableExperimentalFeature("StrictConcurrency", .when(platforms: []))
+            ]
         ),
     ]
 )
