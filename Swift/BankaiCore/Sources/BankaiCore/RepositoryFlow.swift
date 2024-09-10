@@ -67,7 +67,7 @@ public class RepositoryFlow<Data>: SnapshotReceiver {
     /// for each snapshot type.
     /// It also keeps an instance of cancellable in order to control flow
     /// from inside.
-    func run() -> AnyCancellable {
+    public func run() -> AnyCancellable {
         _cancellable = subject
             .receive(on: scheduler)
             .print("zheref")
@@ -95,6 +95,12 @@ public class RepositoryFlow<Data>: SnapshotReceiver {
             })
             .sink { _ in } receiveValue: { _ in }
         return _cancellable
+    }
+    
+    private func republish() -> AnyPublisher<RepoSnapshot<Data>, RepoSyncError> {
+        subject
+            .subscribe(DispatchQueue.main)
+            .eraseToAnyPublisher()
     }
     
     var yieldLocal: (Data) -> Void = { _ in }
@@ -165,25 +171,25 @@ public class RepositoryFlow<Data>: SnapshotReceiver {
     // Subscribe to events
     
     @discardableResult
-    func onLocal(_ yield: @escaping (Data) -> Void) -> Self {
+    public func onLocal(_ yield: @escaping (Data) -> Void) -> Self {
         self.yieldLocal = yield
         return self
     }
     
     @discardableResult
-    func onRemote(_ yield: @escaping (Data, String?) -> Void) -> Self {
+    public func onRemote(_ yield: @escaping (Data, String?) -> Void) -> Self {
         self.yieldRemote = yield
         return self
     }
     
     @discardableResult
-    func onFailure(_ yield: @escaping (RepoSyncError) -> Void) -> Self {
+    public func onFailure(_ yield: @escaping (RepoSyncError) -> Void) -> Self {
         self.yieldFailure = yield
         return self
     }
     
     @discardableResult
-    func onCompletion(_ yield: @escaping () -> Void) -> Self {
+    public func onCompletion(_ yield: @escaping () -> Void) -> Self {
         self.yieldCompletion = yield
         return self
     }
