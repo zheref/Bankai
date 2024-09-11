@@ -16,7 +16,7 @@ public enum RepoSyncError: Error {
     case failedPulling(originalError: Error)
 }
 
-enum RepoSnapshot<T> {
+public enum RepoSnapshot<T> {
     // Happy paths
     case local(T)
     case remote(T, String?)
@@ -41,7 +41,7 @@ public protocol SnapshotReceiver {
 public class RepositoryFlow<Data>: SnapshotReceiver {
     // MARK: - Subtypes
     typealias Receiver = RepositoryFlow
-    typealias Operation = (Receiver) async throws -> Void
+    typealias AsyncBlock = (Receiver) async throws -> Void
     
     // MARK: - Instance Members
     
@@ -54,7 +54,7 @@ public class RepositoryFlow<Data>: SnapshotReceiver {
     /// The operation block to be run when the flow is started.
     /// The body of the operation to be performed by the flow which should
     /// deliver values across time in order to flow to successfully complete.
-    private var body: (Receiver) async throws -> Void = { _ in }
+    private var body: AsyncBlock = { _ in }
     
     private let scheduler: AnySchedulerOf<DispatchQueue>
     
@@ -97,9 +97,15 @@ public class RepositoryFlow<Data>: SnapshotReceiver {
         return _cancellable
     }
     
-    private func republish() -> AnyPublisher<RepoSnapshot<Data>, RepoSyncError> {
+    public func republish() -> AnyPublisher<RepoSnapshot<Data>, RepoSyncError> {
         subject
-            .subscribe(DispatchQueue.main)
+            .receive(on: scheduler)
+            .subscribe(on: DispatchQueue.main)
+            .handleEvents(receiveSubscription: { _ in
+                Task { try await self.body(self) }
+            }, receiveCompletion: { completion in
+                self.hasCompleted = true
+            })
             .eraseToAnyPublisher()
     }
     
@@ -122,10 +128,10 @@ public class RepositoryFlow<Data>: SnapshotReceiver {
     ///     to send new snapshots/events with.
     init(onlyLocalExpected: Bool = false,
          scheduler: AnySchedulerOf<DispatchQueue> = .global(),
-         _ operation: @escaping Operation) {
+         _ body: @escaping AsyncBlock) {
         self.onlyLocalExpected = onlyLocalExpected
         self.scheduler = scheduler
-        self.body = operation
+        self.body = body
     }
     
     // MARK: - Sending values
