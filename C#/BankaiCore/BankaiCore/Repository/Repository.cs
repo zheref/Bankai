@@ -10,12 +10,12 @@ namespace BankaiCore.Repository;
 
 public interface Filter
 {
-    bool? onlyLocally { get; set; }
+    bool? onlyLocally { get; init; }
 }
 
 public interface Identifiable
 {
-    string id { get; init; }
+    string id { get; }
 }
 
 public interface Traceable: Identifiable
