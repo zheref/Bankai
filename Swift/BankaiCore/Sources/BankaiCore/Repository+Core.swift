@@ -13,8 +13,11 @@ extension Repository
             FilterType == Local.FilterType, FilterType == Remote.FilterType
 {
 
-    /// Fetch elements of type filtering by [filter]
-    ///
+    /// Fetches elements of type filtering by [filter]
+    /// - Paremeters:
+    ///     - filter: Object with all information we can filter results against
+    ///     - on: Scheduler where the operation should be performed. Defaults to global.
+    /// - Returns: A flow object to observe future incoming results.
     public func fetch(
         filter: FilterType? = nil,
         on scheduler: AnySchedulerOf<DispatchQueue> = .global()

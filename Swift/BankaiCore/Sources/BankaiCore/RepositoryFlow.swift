@@ -99,6 +99,7 @@ public class RepositoryFlow<Data>: SnapshotReceiver {
     
     public func republish() -> AnyPublisher<RepoSnapshot<Data>, RepoSyncError> {
         subject
+            .buffer(size: .max, prefetch: .byRequest, whenFull: .dropOldest)
             .receive(on: scheduler)
             .subscribe(on: DispatchQueue.main)
             .handleEvents(receiveSubscription: { _ in
