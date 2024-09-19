@@ -5,6 +5,7 @@
 //  Created by Sergio Daniel on 13/08/24.
 //
 
+import Foundation
 import Combine
 
 // Closure Based: Promise
@@ -41,7 +42,7 @@ extension PassthroughSubject {
 }
 
 extension AnyPublisher {
-    static func create1<T, E: Error>(_ collector: @escaping ((ZEvent<T, E>) -> Void) -> AnyCancellable) -> AnyPublisher<T, E> {
+    public static func create<T, E: Error>(_ collector: @escaping ((ZEvent<T, E>) -> Void) -> AnyCancellable) -> AnyPublisher<T, E> {
         let subject = PassthroughSubject<T, E>()
         var cancellable: Cancellable?
         
@@ -85,7 +86,7 @@ extension AnyPublisher {
     }
 }
 
-let testPublisher: AnyPublisher<Int, Error> = .create1 { send in
+let testPublisher: AnyPublisher<Int, Error> = .create { send in
     for n in 0..<7 {
         send(.value(n))
     }
@@ -93,4 +94,17 @@ let testPublisher: AnyPublisher<Int, Error> = .create1 { send in
     send(.complete)
     
     return AnyCancellable {}
+}
+
+extension Int {
+    // TO TEST
+    public func secondsCounter(on loop: RunLoop = .main) -> AnyPublisher<Int, Never> {
+        Timer
+            .publish(every: 1.0, on: loop, in: .common)
+            .autoconnect()
+            .map { _ in return Date() }
+            .scan(0) { seconds, _ in seconds + 1 }
+            .prefix(self)
+            .eraseToAnyPublisher()
+    }
 }
