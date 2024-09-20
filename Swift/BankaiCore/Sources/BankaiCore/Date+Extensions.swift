@@ -30,12 +30,24 @@ extension Date {
         return Calendar.current.date(from: components)
     }
 
-    public static var endOfDay: Date {
-        var components = Calendar.current.dateComponents([.year, .month, .day], from: Date())
+    public static func endOfDay(from referenceDate: Date) -> Date {
+        var components = Calendar.current.dateComponents([.year, .month, .day], from: referenceDate)
         components.hour = 23
         components.minute = 59
         components.second = 59
         return Calendar.current.date(from: components)!
+    }
+    
+    public static func businessStartOfDay(from referenceDate: Date) -> Date {
+        var components = Calendar.current.dateComponents([.year, .month, .day], from: referenceDate)
+        components.hour = 9
+        components.minute = 0
+        components.second = 0
+        return Calendar.current.date(from: components)!
+    }
+    
+    public static func startOfDay(from referenceDate: Date) -> Date {
+        Calendar.current.startOfDay(for: referenceDate)
     }
 }
 
