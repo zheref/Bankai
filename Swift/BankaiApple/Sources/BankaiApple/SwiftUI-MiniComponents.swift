@@ -20,9 +20,10 @@ public var isWide = false
 
 @MainActor
 @ViewBuilder
-public func ButtonLabel(glyph: String, text: String) -> some View {
+public func ButtonLabel(glyph: String, text: String, short: String? = nil) -> some View {
     HStack {
         Image(systemName: glyph)
         if isWide { Text(text) }
+        else if let short { Text(short) }
     }
 }
