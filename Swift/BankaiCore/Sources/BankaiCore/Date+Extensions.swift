@@ -30,7 +30,7 @@ extension Date {
         return Calendar.current.date(from: components)
     }
 
-    public static func endOfDay(from referenceDate: Date) -> Date {
+    public static func endOfDay(from referenceDate: Date = .now) -> Date {
         var components = Calendar.current.dateComponents([.year, .month, .day], from: referenceDate)
         components.hour = 23
         components.minute = 59
