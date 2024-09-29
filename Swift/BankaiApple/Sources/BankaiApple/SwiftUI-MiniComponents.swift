@@ -11,14 +11,12 @@ import SwiftUI
 @MainActor
 public var isWide: Bool { UIDevice.current.userInterfaceIdiom != .phone }
 #else
-public var isWide = false
+public let isWide = false
 #endif
 
 #if os(iOS) || os(tvOS) || targetEnvironment(macCatalyst)
 import UIKit
-#endif
-
-#if os(macOS)
+#else
 import AppKit
 #endif
 
@@ -26,15 +24,15 @@ import AppKit
 @ViewBuilder
 public func ButtonLabel(glyph: String, text: String, short: String? = nil) -> some View {
     HStack {
+        #if os(iOS) || os(tvOS) || targetEnvironment(macCatalyst)
+        Image(systemName: glyph)
+        #else
         if #available(macOS 11.0, *) {
             Image(systemName: glyph)
         } else {
-            #if os(macOS)
-            EmptyView()
-            #else
-            Image(uiImage: UIImage(systemName: glyph))
-            #endif
+            Image(nsImage: .init(imageLiteralResourceName: glyph))
         }
+        #endif
         if isWide { Text(text) }
         else if let short { Text(short) }
     }
