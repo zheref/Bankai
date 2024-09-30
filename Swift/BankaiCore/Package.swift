@@ -13,6 +13,7 @@ let package = Package(
             targets: ["BankaiCore"]),
     ],
     dependencies: [
+        .package(url: "https://github.com/CombineCommunity/CombineExt.git", from: "1.0.0")
 //        .package(url: "https://github.com/pointfreeco/combine-schedulers", from: "1.0.2")
     ],
     targets: [
@@ -20,11 +21,13 @@ let package = Package(
         // Targets can depend on other targets in this package and products from dependencies.
         .target(
             name: "BankaiCore",
+            dependencies: [
+                .product(name: "CombineExt", package: "CombineExt")
+            ],
             swiftSettings: [
                 .swiftLanguageMode(.v5),
                 .enableExperimentalFeature("StrictConcurrency", .when(platforms: []))
             ]
-//            dependencies: ["CombineSchedulers"]
         ),
         .testTarget(
             name: "BankaiCoreTests",

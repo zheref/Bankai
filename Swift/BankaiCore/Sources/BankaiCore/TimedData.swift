@@ -31,7 +31,7 @@ public typealias ZFuture<T> = () async throws -> T
 public typealias ZYielderOf<T, E: Error> = ((Result<T, E>) -> Void) -> Void
 
 // Void to * values
-public typealias FlowOf<T, E: Error> = AnyPublisher<T, E>
+public typealias FlowOf<T, E: Error> = Publisher<T, E>
 public typealias SubjectOf<T, E: Error> = PassthroughSubject<T, E>
 public typealias StreamOf<T, E: Error> = AsyncThrowingStream<T, E>
 
@@ -106,5 +106,20 @@ extension Int {
             .scan(0) { seconds, _ in seconds + 1 }
             .prefix(self)
             .eraseToAnyPublisher()
+    }
+}
+
+extension Future where Failure == Error {
+    convenience init(operation: @escaping @Sendable () async throws -> Output) {
+        self.init { promise in
+            Task {
+                do {
+                    let output = try await operation()
+                    promise(.success(output))
+                } catch {
+                    promise(.failure(error))
+                }
+            }
+        }
     }
 }
