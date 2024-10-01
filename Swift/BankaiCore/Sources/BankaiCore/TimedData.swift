@@ -108,3 +108,13 @@ extension Int {
             .eraseToAnyPublisher()
     }
 }
+
+extension Date {
+    public static func flow(on loop: RunLoop = .main) -> AnyPublisher<Date, Never> {
+        Timer
+            .publish(every: 1.0, on: loop, in: .common)
+            .autoconnect()
+            .map { _ in return Date() }
+            .eraseToAnyPublisher()
+    }
+}

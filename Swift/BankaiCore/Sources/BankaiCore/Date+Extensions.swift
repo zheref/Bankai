@@ -49,6 +49,15 @@ extension Date {
     public static func startOfDay(from referenceDate: Date) -> Date {
         Calendar.current.startOfDay(for: referenceDate)
     }
+    
+    public func digitalTime(includingSeconds: Bool = false) -> String {
+        let formatter: DateFormatter = {
+            let formatter = DateFormatter()
+            formatter.dateFormat = includingSeconds ? "HH:mm:ss" : "HH:mm"
+            return formatter
+        }()
+        return formatter.string(from: self)
+    }
 }
 
 extension DateComponents {
