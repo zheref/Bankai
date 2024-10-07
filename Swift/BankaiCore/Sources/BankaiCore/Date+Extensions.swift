@@ -65,3 +65,26 @@ extension DateComponents {
         Calendar.current.date(from: self)
     }
 }
+
+extension TimeInterval {
+    public func digitalDuration(includingSeconds: Bool = false) -> String {
+        let totalSeconds = Int(self)
+        var remainingSeconds = totalSeconds
+        
+        let hours = remainingSeconds / 3600
+        remainingSeconds = remainingSeconds % 3600
+        let minutes = remainingSeconds / 60
+        remainingSeconds = remainingSeconds % 60
+        let seconds = remainingSeconds
+        
+        if hours > 0 {
+            if includingSeconds {
+                return String(format: "%02d:%02d:%02d", hours, minutes, seconds)
+            } else {
+                return String(format: "%02d:%02d", hours, minutes)
+            }
+        } else {
+            return String(format: "%02d:%02d", minutes, seconds)
+        }
+    }
+}

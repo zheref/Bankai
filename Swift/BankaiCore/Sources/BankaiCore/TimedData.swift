@@ -118,3 +118,15 @@ extension Date {
             .eraseToAnyPublisher()
     }
 }
+
+extension TimeInterval {
+    public func secondsCounter(on loop: RunLoop = .main, contiuingFrom secondsSoFar: TimeInterval = 0.0) -> AnyPublisher<TimeInterval, Never> {
+        Timer
+            .publish(every: 1.0, on: loop, in: .common)
+            .autoconnect()
+            .map { _ in return Date() }
+            .scan(secondsSoFar) { seconds, _ in seconds + 1 }
+            .prefix(Int(self))
+            .eraseToAnyPublisher()
+    }
+}
