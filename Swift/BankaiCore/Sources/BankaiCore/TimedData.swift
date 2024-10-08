@@ -129,4 +129,14 @@ extension TimeInterval {
             .prefix(Int(self))
             .eraseToAnyPublisher()
     }
+    
+    public func countdown(on loop: RunLoop = .main) -> AnyPublisher<TimeInterval, Never> {
+        Timer
+            .publish(every: 1.0, on: loop, in: .common)
+            .autoconnect()
+            .map { _ in return Date() }
+            .scan(self) { seconds, _ in seconds - 1 }
+            .prefix(Int(self))
+            .eraseToAnyPublisher()
+    }
 }
