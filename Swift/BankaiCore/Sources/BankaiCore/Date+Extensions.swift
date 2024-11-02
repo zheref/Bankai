@@ -58,6 +58,10 @@ extension Date {
         }()
         return formatter.string(from: self)
     }
+    
+    public func removingTimeInterval(_ interval: TimeInterval) -> Date {
+        .init(timeIntervalSince1970: self.timeIntervalSince1970 - interval)
+    }
 }
 
 extension DateComponents {
