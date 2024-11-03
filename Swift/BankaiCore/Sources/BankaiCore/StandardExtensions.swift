@@ -47,3 +47,9 @@ extension Date {
         self.addingTimeInterval(24.hours)
     }
 }
+
+extension String {
+    public static var randomUUID: String {
+        UUID().uuidString
+    }
+}
