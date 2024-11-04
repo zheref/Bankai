@@ -8,6 +8,13 @@
 import Foundation
 
 extension Date {
+    public var dateComponents: DateComponents {
+        Calendar.current.dateComponents(
+            [.year, .month, .day, .hour, .minute, .second],
+            from: self
+        )
+    }
+    
     public static func fromDateComponents(year: UInt16, month: UInt8, day: UInt8) -> Date? {
         var components = DateComponents()
 
