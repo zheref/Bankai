@@ -26,7 +26,10 @@ extension Date {
     }
 
     public static func fromTimeComponents(hours: UInt8, minutes: UInt8, seconds: UInt8) -> Date? {
-        var components = DateComponents()
+        var components = Calendar.current.dateComponents(
+            [.year, .month, .day],
+            from: Date()
+        )
 
         components.hour = Int(hours)
         components.minute = Int(minutes)
