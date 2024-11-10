@@ -2,7 +2,9 @@ package io.zheref.bankai.android.udf
 
 import androidx.compose.runtime.*
 import androidx.lifecycle.ViewModel
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewModelScope
+//import androidx.lifecycle.compose
 import io.zheref.bankai.core.utils.random
 import kotlinx.coroutines.*
 import kotlinx.coroutines.flow.*
@@ -85,7 +87,7 @@ abstract class FeatureModel<State, Action>(
 
         @Composable
         operator fun component1(): androidx.compose.runtime.State<State>
-            = this@FeatureModel.state.collectAsState()
+            = this@FeatureModel.state.collectAsStateWithLifecycle()
         operator fun component2(): Dispatcher<Action> = this.dispatch
     }
 

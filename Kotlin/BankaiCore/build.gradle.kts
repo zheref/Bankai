@@ -10,6 +10,8 @@ repositories {
 }
 
 dependencies {
+    implementation("org.jetbrains.kotlinx:kotlinx-datetime:0.6.1")
+
     testImplementation("org.jetbrains.kotlin:kotlin-test")
     testImplementation(kotlin("test"))
     testImplementation("junit:junit:4.13.2")
