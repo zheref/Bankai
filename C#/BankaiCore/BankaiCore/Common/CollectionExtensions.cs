@@ -25,4 +25,32 @@ public static class CollectionExtensions
             }
         }
     }
+
+    public static IEnumerable<T> compactMap<T>(
+        this IEnumerable<T> self,
+        Func<T, T?> transform
+    )
+    {
+        foreach (var item in self)
+        {
+            var transformed = transform(item);
+            if (transformed is not null)
+            {
+                yield return transformed;
+            }
+        }
+    }
+
+    public static IEnumerable<U> castElements<T, U>(
+        this IEnumerable<T> self
+    )
+    {
+        foreach (var item in self)
+        {
+            if (item is U casted)
+            {
+                yield return casted;
+            }
+        }
+    }
 }
