@@ -19,10 +19,27 @@ public static class ReactiveExtensions
         ref HashSet<IDisposable> targetSet
     ) => targetSet.Add(self);
 
-    public static IObservable<int> SecondsCounter(this TimeSpan self)
+    /// <summary>
+    /// Declares a publishing ticker as an observable triggering new
+    /// signals for each second during this time span. Takes an elapsed
+    /// duration so far in case we want to consider such thing.
+    /// </summary>
+    /// <param name="self">The timespan metric to count down against</param>
+    /// <param name="durationSoFar">The timespan to be considered up front</param>
+    /// <returns>An observable sending signals every second until timespan is met</returns>
+    public static IObservable<int> SecondsCounter(this TimeSpan self, TimeSpan durationSoFar)
         => Observable.Timer(TimeSpan.FromSeconds(2))
             .Select(_ => DateTime.Now)
-            .Scan(0, (seconds, _) => seconds + 1)
+            .Scan(durationSoFar.Seconds, (seconds, _) => seconds + 1)
             .Take(self.Seconds)
             .AsObservable();
+
+    /// <summary>
+    /// Declares a publishing ticker as an observable triggering new
+    /// signals for each second during this time span.
+    /// </summary>
+    /// <param name="self">The timespan to be considered up front</param>
+    /// <returns>An observable sending signals every second until timespan is met</returns>
+    public static IObservable<int> SecondsCounter(this TimeSpan self)
+        => self.SecondsCounter(TimeSpan.Zero);
 }
