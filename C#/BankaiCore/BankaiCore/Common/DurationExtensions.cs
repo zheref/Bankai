@@ -35,7 +35,7 @@ public static class DurationExtensions
     /// <param name="includingSeconds">Whether to include seconds in the output</param>
     /// <returns>Digital formatted string reading this duration</returns>
     public static string digitalDuration(this TimeSpan self, bool includingSeconds = false)
-        => includingSeconds ? 
-              $"{self.Hours:D2}:{self.Minutes:D2}:{self.Seconds:D2}"
-            : $"{self.Hours:D2}:{self.Minutes:D2}";
+        => includingSeconds && self.Hours > 0 ? 
+            $"{self.Hours:D2}:{self.Minutes:D2}:{self.Seconds:D2}"
+            : $"{self.Minutes:D2}:{self.Seconds:D2}";
 }
