@@ -31,7 +31,7 @@ public static class ReactiveExtensions
     /// <returns>An observable sending signals every second until timespan is met</returns>
     public static IObservable<int> SecondsCounter(this TimeSpan self,
         TimeSpan durationSoFar, IScheduler scheduler)
-        => Observable.Interval(1.Seconds(), scheduler)
+        => Observable.Interval(1.Seconds())
             .Select(ts =>
             {
                 Console.WriteLine($"Got Interval Value: {ts}");
