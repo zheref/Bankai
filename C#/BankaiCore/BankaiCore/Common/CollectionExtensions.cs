@@ -53,4 +53,14 @@ public static class CollectionExtensions
             }
         }
     }
+
+    public static Nullable<T> At<T>(this IEnumerable<T> self, int index) where T : struct
+    {
+        return self.Count() > index ? self.ElementAt(index) : null;
+    }
+
+    public static T? RefAt<T>(this IEnumerable<T> self, int index) where T : class
+    {
+        return self.Count() > index ? self.ElementAt(index) : default;
+    }
 }
