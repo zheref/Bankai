@@ -37,6 +37,20 @@ extension Date {
 
         return Calendar.current.date(from: components)
     }
+    
+    /// Amount of hours past the start of the day (00:00) up to this timestamp
+    public var hoursUponDay: Double {
+        let hours = Double(Calendar.current.component(.hour, from: self))
+        let minutes = Double(Calendar.current.component(.minute, from: self))
+        return hours + (minutes / 60)
+    }
+    
+    /// Amount of minutes past the start of the day (00:00) up to this timestamp
+    public var minutesUponDay: Int {
+        let hour = Calendar.current.component(.hour, from: self)
+        let minutes = Calendar.current.component(.minute, from: self)
+        return ((hour * 60) + minutes)
+    }
 
     public static func endOfDay(from referenceDate: Date = Date()) -> Date {
         var components = Calendar.current.dateComponents([.year, .month, .day], from: referenceDate)
