@@ -15,12 +15,12 @@ public interface Filter
 
 public interface Identifiable
 {
-    string id { get; }
+    string Identifier { get; }
 }
 
 public interface Traceable: Identifiable
 {
-    DateTime? updatedAt { get; set; }
+    DateTime? UpdatedAt { get; set; }
 }
 
 public interface DataSource<T, F> 
@@ -106,6 +106,16 @@ public interface Repository<T, F>: DataSource<T, F>
     }
 
     /// <summary>
+    /// Fetch the first element of type from the local source.
+    /// </summary>
+    /// <returns>The first element found or default if none was found</returns>
+    public async Task<T?> grabFirstLocal()
+    {
+        var snapshot = await local.retrieve(default);
+        return snapshot.FirstOrDefault();
+    }
+
+    /// <summary>
     /// Given a local collection of N data, this function mixes and replaces
     /// as needed to be given an incoming remote collection of M data.
     /// </summary>
@@ -127,21 +137,21 @@ public interface Repository<T, F>: DataSource<T, F>
     {
         foreach (var traceable in remoteSnapshot)
         {
-            var index = snapshot.FindIndex(it => it.id == traceable.id);
+            var index = snapshot.FindIndex(it => it.Identifier == traceable.Identifier);
             if (index < 0)
             {
                 snapshot.Add(traceable);
                 continue;
             }
 
-            if (traceable.updatedAt == null ||
-                snapshot[index].updatedAt == null)
+            if (traceable.UpdatedAt == null ||
+                snapshot[index].UpdatedAt == null)
             {
                 snapshot[index] = traceable;
                 continue;
             }
 
-            if (traceable.updatedAt > snapshot[index].updatedAt)
+            if (traceable.UpdatedAt > snapshot[index].UpdatedAt)
                 snapshot[index] = traceable;
         }
     }
