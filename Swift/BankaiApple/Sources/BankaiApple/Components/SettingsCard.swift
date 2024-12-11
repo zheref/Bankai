@@ -7,7 +7,7 @@
 
 import SwiftUI
 
-struct SettingsCard<Description: View, Content: View>: View {
+public struct SettingsCard<Description: View, Content: View>: View {
     
     // MARK: Stored Properties
     
@@ -17,7 +17,7 @@ struct SettingsCard<Description: View, Content: View>: View {
     let content: Content
     
     // Initilializer
-    init(
+    public init(
         header: String? = nil,
         @ViewBuilder description: () -> Description,
         @ViewBuilder content: () -> Content
@@ -29,12 +29,13 @@ struct SettingsCard<Description: View, Content: View>: View {
     
     // Render
     
-    var body: some View {
+    public var body: some View {
         HStack {
             VStack(alignment: .leading) {
                 if let header {
                     Text(header)
-                        .font(.custom("SFProText-Bold", size: 16))
+                        .font(.custom("SFProDisplay-Medium", size: 14))
+                        .padding(.bottom, 0.5)
                 }
                 description
             }
