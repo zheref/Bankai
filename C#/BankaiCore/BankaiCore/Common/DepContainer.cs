@@ -1,5 +1,12 @@
 ﻿namespace BankaiCore.Common;
 
+public enum DepEnv
+{
+    Live,
+    Test,
+    Preview
+}
+
 public interface IDepContainer
 {
     string Name { get; init; }

@@ -8,5 +8,8 @@ namespace BankaiCore.Common;
 public interface AppContext
 {
     public void AddDependency(IDepContainer dep);
-    public DepContainer<T>? GetDependency<T>(string name) where T: class;
+
+    public DepContainer<T>? GetDependencyContainer<T>(string name) where T : class;
+
+    public Dep? GetDependency<Dep>(string name, DepEnv environment) where Dep : class;
 }
