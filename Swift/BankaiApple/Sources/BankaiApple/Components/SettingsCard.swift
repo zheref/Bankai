@@ -15,16 +15,19 @@ public struct SettingsCard<Description: View, Content: View>: View {
     let header: String?
     let description: Description
     let content: Content
+    let backgroundColor: Color
     
     // Initilializer
     public init(
         header: String? = nil,
+        backgroundColor: Color = Color.white,
         @ViewBuilder description: () -> Description,
         @ViewBuilder content: () -> Content
     ) {
         self.header = header
         self.description = description()
         self.content = content()
+        self.backgroundColor = backgroundColor
     }
     
     // Render
@@ -43,7 +46,7 @@ public struct SettingsCard<Description: View, Content: View>: View {
             content
         }
         .padding(20)
-        .background(Color.white)
+        .background(self.backgroundColor)
         .cornerRadius(10)
     }
     

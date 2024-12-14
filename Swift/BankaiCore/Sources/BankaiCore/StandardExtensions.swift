@@ -48,24 +48,46 @@ extension Int {
 }
 
 extension Calendar.Component {
-    func localizedString(pluralized: Bool = false) -> String {
+    func localizedString(pluralized: Bool = false, abbreviated: Bool = false) -> String {
+        if abbreviated {
+            switch self {
+            case .year:
+                return "yr."
+            case .month:
+                return "mo."
+            case .weekOfMonth, .weekOfYear:
+                return "wk."
+            case .day:
+                return "d"
+            case .hour:
+                return "h"
+            case .minute:
+                return pluralized ? "min" : "mins"
+            case .second:
+                return pluralized ? "sec" : "secs"
+            case .nanosecond:
+                return pluralized ? "nanoseconds" : "nanosecond"
+            default:
+                return "\(self)"
+            }
+        }
         switch self {
         case .year:
-            return pluralized ? "years" : "year"
+            return pluralized ? " years" : " year"
         case .month:
-            return pluralized ? "months" : "month"
+            return pluralized ? " months" : " month"
         case .weekOfMonth, .weekOfYear:
-            return pluralized ? "weeks" : "week"
+            return pluralized ? " weeks" : " week"
         case .day:
-            return pluralized ? "days" : "day"
+            return pluralized ? " days" : " day"
         case .hour:
-            return pluralized ? "hours" : "hour"
+            return pluralized ? " hours" : " hour"
         case .minute:
-            return pluralized ? "minutes" : "minute"
+            return pluralized ? " minutes" : " minute"
         case .second:
-            return pluralized ? "seconds" : "second"
+            return pluralized ? " seconds" : " second"
         case .nanosecond:
-            return pluralized ? "nanoseconds" : "nanosecond"
+            return pluralized ? " nanoseconds" : " nanosecond"
         default:
             return "\(self)"
         }
@@ -124,10 +146,10 @@ extension TimeInterval {
         }
     }
     
-    public func readable(preferring unit: Calendar.Component? = nil) -> String? {
+    public func readable(preferring unit: Calendar.Component? = nil, abbreviated: Bool = false) -> String? {
         if let unit {
             if let converted = self.converted(to: unit) {
-                return "\(converted) \(unit.localizedString(pluralized: converted > 1))"
+                return "\(converted)\(unit.localizedString(pluralized: converted > 1, abbreviated: abbreviated))"
             }
             
             return nil
@@ -135,25 +157,25 @@ extension TimeInterval {
         
         if self < 60 {
             let seconds = Int(self.rounded(.down))
-            return "\(seconds) \(Calendar.Component.second.localizedString(pluralized: seconds > 1))"
+            return "\(seconds)\(Calendar.Component.second.localizedString(pluralized: seconds > 1, abbreviated: abbreviated))"
         } else if self.toMinutes < 60 {
             let minutes = Int(self.toMinutes.rounded(.down))
-            return "\(minutes) \(Calendar.Component.minute.localizedString(pluralized: minutes > 1))"
+            return "\(minutes)\(Calendar.Component.minute.localizedString(pluralized: minutes > 1, abbreviated: abbreviated))"
         } else if self.toHours < 24 {
             let hours = Int(self.toHours.rounded(.down))
-            return "\(hours) \(Calendar.Component.hour.localizedString(pluralized: hours > 1))"
+            return "\(hours)\(Calendar.Component.hour.localizedString(pluralized: hours > 1, abbreviated: abbreviated))"
         } else if self.toDays < 7 {
             let days = Int(self.toDays.rounded(.down))
-            return "\(days) \(Calendar.Component.day.localizedString(pluralized: days > 1))"
+            return "\(days)\(Calendar.Component.day.localizedString(pluralized: days > 1, abbreviated: abbreviated))"
         } else if self.toWeeks < 4 {
             let weeks = Int(self.toWeeks.rounded(.down))
-            return "\(weeks) \(Calendar.Component.weekOfYear.localizedString(pluralized: weeks > 1))"
+            return "\(weeks)\(Calendar.Component.weekOfYear.localizedString(pluralized: weeks > 1, abbreviated: abbreviated))"
         } else if self.toMonths < 12 {
             let months = Int(self.toMonths.rounded(.down))
-            return "\(months) \(Calendar.Component.month.localizedString(pluralized: months > 1))"
+            return "\(months)\(Calendar.Component.month.localizedString(pluralized: months > 1, abbreviated: abbreviated))"
         } else {
             let years = Int(self.toYears.rounded(.down))
-            return "\(years) \(Calendar.Component.year.localizedString(pluralized: years > 1))"
+            return "\(years)\(Calendar.Component.year.localizedString(pluralized: years > 1, abbreviated: abbreviated))"
         }
     }
 }

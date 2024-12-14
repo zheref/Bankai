@@ -8,6 +8,7 @@
 import Foundation
 
 extension Date {
+    
     public var dateComponents: DateComponents {
         Calendar.current.dateComponents(
             [.year, .month, .day, .hour, .minute, .second],
@@ -113,4 +114,16 @@ extension TimeInterval {
             return String(format: "%02d:%02d", minutes, seconds)
         }
     }
+}
+
+extension Optional: Comparable where Wrapped: Equatable, Wrapped: Comparable {
+    
+    public static func < (lhs: Optional<Wrapped>, rhs: Optional<Wrapped>) -> Bool {
+        if let lhs, let rhs {
+            return lhs < rhs
+        }
+        
+        return false
+    }
+    
 }
