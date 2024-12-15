@@ -26,7 +26,9 @@ extension Date {
         return Calendar.current.date(from: components)
     }
 
-    public static func fromTimeComponents(hours: UInt8, minutes: UInt8, seconds: UInt8) -> Date? {
+    public static func fromTimeComponents(hours: UInt8,
+                                          minutes: UInt8,
+                                          seconds: UInt8) -> Date? {
         var components = Calendar.current.dateComponents(
             [.year, .month, .day],
             from: Date()
@@ -37,6 +39,16 @@ extension Date {
         components.second = Int(seconds)
 
         return Calendar.current.date(from: components)
+    }
+    
+    public static func todayAt(_ hours: UInt8,
+                               _ minutes: UInt8,
+                               _ seconds: UInt8 = 0) -> Date? {
+        Self.fromTimeComponents(
+            hours: hours,
+            minutes: minutes,
+            seconds: seconds
+        )
     }
     
     /// Amount of hours past the start of the day (00:00) up to this timestamp
