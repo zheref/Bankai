@@ -10,6 +10,12 @@ public typealias VersionDecimal = Double
 public class OSVersion {
     public typealias VersionResolver = () -> String
     
+    @MainActor private static var current: OSVersion?
+    
+    @MainActor public static func setCurrent(_ version: OSVersion) {
+        current = version
+    }
+    
     private static func versionDecimal(from str: String) -> VersionDecimal? {
         let semverPieces = str.split(separator: ".")
         
@@ -60,7 +66,7 @@ public class OSVersion {
     
     /// Resolves as a Double the current version of the operating system where
     /// the app is running.
-    public var Current: VersionDecimal? {
+    public var CurrentVersion: VersionDecimal? {
         guard let versionResolver else {
             return nil
         }
@@ -72,7 +78,7 @@ public class OSVersion {
     /// Virtual target version at compile time. If enforced is not set,
     /// it will resolve to latest version supported by Kro.
     /// See and/or override "Latest".
-    public var Target: VersionDecimal? { enforced ?? Self.Latest }
+    public var TargetVersion: VersionDecimal? { enforced ?? Self.Latest }
     
     
 }
