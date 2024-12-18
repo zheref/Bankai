@@ -10,14 +10,20 @@ import Foundation
 public struct ListGroup<Element: Identifiable, Key: Printable>: Equatable, Hashable, Identifiable
     where Element: Equatable, Key: Equatable, Element: Hashable, Key: Hashable {
     
+    /// The key that identifies this group uniquely
     public let key: Key
     
+    /// The title preferred for display. Key printable description will be used if none is provided
+    /// for display purposes
     public var title: String?
     
+    /// The unique ID of the group. Resolved as the key as it is expected to be unique.
     public var id: Key { key }
     
+    /// The elements held within this group
     public var elements: [Element]
     
+    /// Whether there's more elements expected for this group
     public var isTrimmed: Bool
     
     public init(key: Key, elements: [Element], isTrimmed: Bool = false, title: String? = nil) {
