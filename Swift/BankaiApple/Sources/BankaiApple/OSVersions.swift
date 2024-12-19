@@ -7,9 +7,11 @@
 
 public typealias VersionDecimal = Double
 
-public enum OSVersion: Comparable {
+public enum OSVersion: Comparable, Sendable {
     #if os(macOS)
+    // Without Support
     case bigSur
+    // Starting Support
     case monterey
     case ventura
     case sonoma
@@ -57,6 +59,10 @@ public enum OSVersion: Comparable {
     public static func < (lhs: OSVersion, rhs: OSVersion) -> Bool {
         lhs.decimal < rhs.decimal
     }
+    
+    public static func >= (lhs: OSVersion, rhs: OSVersion) -> Bool {
+        lhs.decimal >= rhs.decimal
+    }
 }
 
 public class OSEnv {
@@ -74,33 +80,16 @@ public class OSEnv {
         return current.TargetVersion < expectedVersion
     }
     
-    #if os(macOS)
-    // Without Support
-    public static let BigSur = 11.7
+    @MainActor public static func isAtLeast(_ expectedVersion: OSVersion) -> Bool {
+        guard let current else { return false }
+        return current.TargetVersion >= expectedVersion
+    }
     
-    // Starting Support
-    public static let Monterey: VersionDecimal = 12.6
-    public static let Ventura: VersionDecimal = 13.7
-    public static let Sonoma: VersionDecimal = 14.7
-    public static let Sequoia: VersionDecimal = 15.1
-    #elseif os(iOS) // iOS and IPadOS
-    // Without Support
-    public static let OS_15: VersionDecimal = 15.0
-    public static let OS_16: VersionDecimal = 16.0
+    /// Earliest version supported by Kro
+    public static let lowestSupported: OSVersion = .monterey
     
-    // Starting Support
-    public static let OS_17: VersionDecimal = 17.0
-    public static let OS_18: VersionDecimal = 18.0
-    #elseif targetEnvironment(macCatalyst)
-    // Without Support
-    public static let SDK_16: VersionDecimal = 16.0
-    
-    // Starting Support
-    public static let SDK_17: VersionDecimal = 17.0
-    public static let SDK_18: VersionDecimal = 18.0
-    #endif
-    
-    public static var Latest: OSVersion { .sequoia }
+    /// Latest version supported by Kro
+    public static let latestSupported: OSVersion = .sequoia
     
     private var enforced: OSVersion?
     private var versionResolver: VersionStringResolver?
@@ -127,7 +116,7 @@ public class OSEnv {
     /// Virtual target version at compile time. If enforced is not set,
     /// it will resolve to latest version supported by Kro.
     /// See and/or override "Latest".
-    public var TargetVersion: OSVersion { enforced ?? Self.Latest }
+    public var TargetVersion: OSVersion { enforced ?? Self.latestSupported }
     
     
 }
