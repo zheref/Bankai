@@ -72,7 +72,12 @@ public class OSEnv {
     
     @MainActor public static var current: OSEnv? {
         get { _current }
-        set { _current = newValue }
+        set {
+            _current = newValue
+            print(
+                "Current environment initialized as: \(String(describing: _current?.TargetVersion))"
+            )
+        }
     }
     
     @MainActor public static func prior(to expectedVersion: OSVersion) -> Bool {
@@ -81,7 +86,7 @@ public class OSEnv {
     }
     
     @MainActor public static func isAtLeast(_ expectedVersion: OSVersion) -> Bool {
-        guard let current else { return false }
+        guard let current else { return true }
         return current.TargetVersion >= expectedVersion
     }
     

@@ -27,12 +27,8 @@ public func ButtonLabel(glyph: String, text: String, short: String? = nil) -> so
         #if os(iOS) || os(tvOS) || targetEnvironment(macCatalyst)
         Image(systemName: glyph)
         #else
-        if #available(macOS 11.0, *) {
-            if OSEnv.prior(to: .bigSur) {
-                Image(nsImage: .init(imageLiteralResourceName: glyph))
-            } else {
-                Image(systemName: glyph)
-            }
+        if #available(macOS 11.0, *), OSEnv.isAtLeast(.bigSur) {
+            Image(systemName: glyph)
         } else {
             Image(nsImage: .init(imageLiteralResourceName: glyph))
         }
