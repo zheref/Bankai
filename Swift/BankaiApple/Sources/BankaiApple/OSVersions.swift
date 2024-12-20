@@ -18,6 +18,8 @@ public enum OSVersion: Comparable, Sendable {
     case sequoia
     #endif
     
+    public static let latest: OSVersion = .sequoia
+    
     public var decimal: VersionDecimal {
         #if os(macOS)
         switch self {
