@@ -17,6 +17,7 @@ struct OnUpdateModifier<V>: ViewModifier where V: Equatable {
     var lastValue: V
     
     public func body(content: Content) -> some View {
+        #if os(macOS)
         if #available(macOS 14.0, *), OSEnv.isAtLeast(.sonoma) {
             content
                 .onChange(of: value) { action($0, $1) }
@@ -26,6 +27,12 @@ struct OnUpdateModifier<V>: ViewModifier where V: Equatable {
                     action(lastValue, $0)
                 }
         }
+        #else
+        content
+            .onReceive(publisher) {
+                action(lastValue, $0)
+            }
+        #endif
     }
     
 }

@@ -16,9 +16,22 @@ public enum OSVersion: Comparable, Sendable {
     case ventura
     case sonoma
     case sequoia
+    #else
+    // Without Support
+    case v15
+    case v16
+    // Starting Support
+    case v17
+    case v18
+    case v18p2
+    case v18p3
     #endif
     
+    #if os(macOS)
     public static let latest: OSVersion = .sequoia
+    #else
+    public static let latest: OSVersion = .v18p3
+    #endif
     
     public var decimal: VersionDecimal {
         #if os(macOS)
@@ -29,16 +42,33 @@ public enum OSVersion: Comparable, Sendable {
         case .sonoma: return 14.7
         case .sequoia: return 15.1
         }
+        #else
+        switch self {
+        case .v15: return 15.0
+        case .v16: return 16.0
+        case .v17: return 17.0
+        case .v18: return 18.0
+        case .v18p2: return 18.2
+        case .v18p3: return 18.3
+        }
         #endif
     }
     
     public static func from(decimal: VersionDecimal) -> OSVersion? {
-        switch Int(decimal) {
+        switch decimal {
+        #if os(macOS)
         case 11: return .bigSur
         case 12: return .monterey
         case 13: return .ventura
         case 14: return .sonoma
         case 15: return .sequoia
+        #else
+        case 15: return .v15
+        case 16: return .v16
+        case 18: return .v18
+        case 18.2: return .v18p2
+        case 18.3: return .v18p3
+        #endif
         default: return nil
         }
     }
@@ -93,10 +123,18 @@ public class OSEnv {
     }
     
     /// Earliest version supported by Kro
+    #if os(macOS)
     public static let lowestSupported: OSVersion = .monterey
+    #else
+    public static let lowestSupported: OSVersion = .v17
+    #endif
     
     /// Latest version supported by Kro
+    #if os(macOS)
     public static let latestSupported: OSVersion = .sequoia
+    #else
+    public static let latestSupported: OSVersion = .v18p2
+    #endif
     
     private var enforced: OSVersion?
     private var versionResolver: VersionStringResolver?
