@@ -51,6 +51,10 @@ extension Date {
         )
     }
     
+    public func isWithin(lastSeconds seconds: TimeInterval) -> Bool {
+        Date().timeIntervalSince(self) < seconds
+    }
+    
     /// Amount of hours past the start of the day (00:00) up to this timestamp
     public var hoursUponDay: Double {
         let hours = Double(Calendar.current.component(.hour, from: self))
