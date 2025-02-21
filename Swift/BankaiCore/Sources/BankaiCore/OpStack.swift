@@ -6,8 +6,13 @@
 //
 
 public struct OpError: Error, Hashable {
-    let message: String
-    let recoverable: Bool
+    public let message: String
+    public let recoverable: Bool
+    
+    public init(message: String, recoverable: Bool = false) {
+        self.message = message
+        self.recoverable = recoverable
+    }
 }
 
 public enum OpStatus: Hashable {
@@ -21,6 +26,10 @@ public struct Op: Hashable {
     public let name: String
     public var status: OpStatus
     public var isProgressCountable: Bool = true
+    
+    public static func starting(_ name: String) -> Op {
+        .init(name: name, status: .ongoing)
+    }
     
     public var isResolved: Bool {
         switch status {
