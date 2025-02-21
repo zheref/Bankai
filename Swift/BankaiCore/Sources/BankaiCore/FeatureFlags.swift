@@ -11,7 +11,7 @@ public enum FeatureFlagState: Codable {
     case undetermined
 }
 
-public struct FeatureFlag: Codable, Equatable {
+public struct FeatureFlag: Codable, Hashable {
     let name: String
     
     public init(name: String) {
@@ -19,7 +19,7 @@ public struct FeatureFlag: Codable, Equatable {
     }
 }
 
-public struct FeatureFlagAssignment: Codable {
+public struct FeatureFlagAssignment: Codable, Hashable {
     public let flag: FeatureFlag
     public var state: FeatureFlagState
     
