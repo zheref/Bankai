@@ -30,6 +30,7 @@ public struct FeatureFlagAssignment: Codable, Hashable {
 }
 
 public protocol FeatureFlagService {
+    func enabledResolver(_ featureFlag: FeatureFlag) -> () -> Bool
     func state(for featureFlag: FeatureFlag) -> FeatureFlagState?
     mutating func change(ff featureFlag: FeatureFlag, to state: FeatureFlagState)
 }
