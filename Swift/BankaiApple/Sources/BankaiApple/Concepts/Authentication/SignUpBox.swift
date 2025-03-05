@@ -22,6 +22,7 @@ public struct SignUpStep {
     public var intention: SignUpStepIntention
 }
 
+@available(macOS 12.0, *)
 public struct SignUpBox: View {
     
     let imageName: String?
@@ -46,7 +47,7 @@ public struct SignUpBox: View {
     
     public var body: some View {
         GroupBox {
-            VStack(spacing: theme.regularSurroundingPadding) {
+            VStack(spacing: theme.design.sizes.regularSurroundingPadding) {
                 headerImage
                 Text("Start creating your account")
                     .font(.title.bold())
@@ -87,9 +88,9 @@ public struct SignUpBox: View {
                     EmptyView()
                 }
             }
-            .padding(theme.regularSurroundingPadding)
+            .padding(theme.design.sizes.regularSurroundingPadding)
         }
-        .padding(theme.regularMajorPadding)
+        .padding(theme.design.sizes.regularMajorPadding)
     }
     
     @ViewBuilder
@@ -117,14 +118,14 @@ public struct SignUpBox: View {
 
 // MARK: - Computed
 
+@available(macOS 12.0, *)
 extension SignUpBox {
-    
     var currentStep: SignUpStep { steps[currentStepPosition] }
-    
 }
 
 // MARK: - Defaults
 
+@available(macOS 12.0, *)
 extension SignUpBox {
     
     static let defaultSteps: [SignUpStep] = [
@@ -135,8 +136,9 @@ extension SignUpBox {
     
 }
 
+@available(macOS 14.0, *)
 #Preview("Expecting Information") {
-    @State var email: String = ""
+    @Previewable @State var email: String = ""
     
     SignUpBox(
         emailInput: $email

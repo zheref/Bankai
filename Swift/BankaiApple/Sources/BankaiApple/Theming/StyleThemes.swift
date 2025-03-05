@@ -7,42 +7,25 @@
 
 import SwiftUI
 
-public enum DesignLanguage {
-    case cocoa
-    case cupertino
-    case material2
-    case material3
-    case modern
-    case fluent
-}
+// Theme
+// Colors -> Palette
+// Design Language -> Design (Sizes, Spacing, Paddings, etc)
+// Typography -> FontMap
 
 public struct StyleTheme {
-    let name: String
-    let base: DesignLanguage
+    public let name: String
+    public let design: Design
+    public let colors: Palette
     
-    let regularMajorPadding: CGFloat
-    let regularSurroundingPadding: CGFloat
-    
-    let textFieldHeight: CGFloat
-    let textFieldCornerRadius: CGFloat
-}
-
-extension StyleTheme {
-    
-    @MainActor
-    static let cocoa: StyleTheme = .init(
-        name: "Cocoa",
-        base: .cocoa,
-        regularMajorPadding: 20.0,
-        regularSurroundingPadding: 13.0,
-        textFieldHeight: 40.0,
-        textFieldCornerRadius: 20.0
-    )
-    
+    public init(name: String, design: Design, colors: Palette) {
+        self.name = name
+        self.design = design
+        self.colors = colors
+    }
 }
 
 public struct ThemedTextFieldStyle: TextFieldStyle {
-    let base: DesignLanguage
+    let theme: StyleTheme
     let padding: CGFloat
     let radius: CGFloat = 10.0
     
@@ -51,27 +34,6 @@ public struct ThemedTextFieldStyle: TextFieldStyle {
             .padding(padding)
             .background(Color.white)
             .cornerRadius(radius)
-    }
-}
-
-extension View {
-    /// Applies the given transform if the given condition evaluates to `true`.
-    /// - Parameters:
-    ///   - condition: The condition to evaluate.
-    ///   - transform: The transform to apply to the source `View`.
-    /// - Returns: Either the original `View` or the modified `View` if the condition is `true`.
-    @ViewBuilder
-    func `if`<Content: View>(_ condition: @autoclosure () -> Bool, transform: (Self) -> Content) -> some View {
-        if condition() {
-            transform(self)
-        } else {
-            self
-        }
-    }
-    
-    @ViewBuilder
-    func modify<Content: View>(_ transform: (Self) -> Content) -> some View {
-        transform(self)
     }
 }
 
