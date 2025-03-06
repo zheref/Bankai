@@ -60,28 +60,32 @@ public struct AnySettingsElement: SettingsElement {
         return r.eraseToAnySettingsElement()
     }
     
-    public static func heading(_ key: String, titled title: String) -> AnySettingsElement {
+    @available(macOS 12.0, *)
+    public static func heading(_ key: String, titled title: String, icon: SymbolIcon? = nil) -> AnySettingsElement {
         let r = SettingsPreference.heading(
-            PreferenceConfig(key: key, title: title)
+            PreferenceConfig(key: key, title: title, icon: icon)
         )
         return r.eraseToAnySettingsElement()
     }
     
-    public static func fixed(_ key: String, titled title: String, icon: Image) -> AnySettingsElement {
+    @available(macOS 12.0, *)
+    public static func fixed(_ key: String, titled title: String, icon: SymbolIcon) -> AnySettingsElement {
         let r = SettingsPreference.fixed(
             PreferenceConfig(key: key, title: title, icon: icon)
         )
         return r.eraseToAnySettingsElement()
     }
     
-    public static func toggle(_ key: String, titled title: String, icon: Image) -> AnySettingsElement {
+    @available(macOS 12.0, *)
+    public static func toggle(_ key: String, titled title: String, icon: SymbolIcon) -> AnySettingsElement {
         let r = SettingsPreference.toggle(
             PreferenceConfig(key: key, title: title, icon: icon)
         )
         return r.eraseToAnySettingsElement()
     }
     
-    public static func text(_ key: String, titled title: String, icon: Image) -> AnySettingsElement {
+    @available(macOS 12.0, *)
+    public static func text(_ key: String, titled title: String, icon: SymbolIcon) -> AnySettingsElement {
         let r = SettingsPreference.text(
             PreferenceConfig(key: key, title: title, icon: icon)
         )
@@ -154,11 +158,11 @@ public struct PreferenceConfig: Hashable {
     public let title: String
     public let binding: Binding<String>
     public let description: String?
-    public let icon: Image?
+    public let icon: SymbolIcon?
     public let placeholder: String?
     
     
-    public init(key: String, title: String, description: String? = nil, icon: Image? = nil, placeholder: String? = nil, binding: Binding<String>? = nil) {
+    public init(key: String, title: String, description: String? = nil, icon: SymbolIcon? = nil, placeholder: String? = nil, binding: Binding<String>? = nil) {
         self.key = key
         self.title = title
         self.description = description

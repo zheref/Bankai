@@ -13,7 +13,7 @@ public struct InnerCapsuleModifier: ViewModifier {
     public let isFocused: Bool
     public let theme: StyleTheme
     
-    public init(cornerRadius: CGFloat, isFocused: Bool, theme: StyleTheme = .cocoa) {
+    public init(cornerRadius: CGFloat, isFocused: Bool, theme: StyleTheme) {
         self.cornerRadius = cornerRadius
         self.isFocused = isFocused
         self.theme = theme
@@ -35,9 +35,9 @@ public struct InnerCapsuleModifier: ViewModifier {
 
 extension View {
     
-    public func innerCapsule(cornerRadius: CGFloat = 10, isFocused: Bool = false) -> some View {
+    public func innerCapsule(cornerRadius: CGFloat = 10, isFocused: Bool = false, theme: StyleTheme = .cocoa) -> some View {
         modifier(
-            InnerCapsuleModifier(cornerRadius: cornerRadius, isFocused: isFocused)
+            InnerCapsuleModifier(cornerRadius: cornerRadius, isFocused: isFocused, theme: theme)
         )
     }
 }
