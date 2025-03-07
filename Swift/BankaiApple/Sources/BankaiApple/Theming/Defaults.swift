@@ -15,6 +15,7 @@ extension Palette {
         let warningColor = Color(.systemYellow)
         let dangerColor = Color(.systemRed)
         let foregroundColor = Color(.labelColor)
+        let foreground2Color = Color(.secondaryLabelColor)
         let background1Color = Color(.windowBackgroundColor)
         let border1Color = Color(.separatorColor)
         let background2Color = Color(.controlBackgroundColor)
@@ -27,6 +28,7 @@ extension Palette {
         let warningColor = Color(uiColor: .systemYellow)
         let dangerColor = Color(uiColor: .systemRed)
         let foregroundColor = Color(uiColor: .labelColor)
+        let foreground2Color = Color(uiColor: .secondaryLabelColor)
         let background1Color = Color(uiColor: .windowBackgroundColor)
         let border1Color = Color(uiColor: .separatorColor)
         let background2Color = Color(uiColor: .controlBackgroundColor)
@@ -42,6 +44,7 @@ extension Palette {
             warning: warningColor,
             danger: dangerColor,
             foreground: foregroundColor,
+            foreground2: foreground2Color,
             background1: background1Color,
             border1: border1Color,
             background2: background2Color,
@@ -50,7 +53,7 @@ extension Palette {
             border3: border3Color,
             absolute: absoluteColor,
             complementaryA: Color.green,
-            complementeryB: Color.blue,
+            complementaryB: Color.blue,
             complementaryC: Color.orange
         )
     }()

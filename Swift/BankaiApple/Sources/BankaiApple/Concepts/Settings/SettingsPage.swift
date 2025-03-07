@@ -23,7 +23,7 @@ public struct SymbolIcon: View {
             case .large:
                 return CGSize(width: 24, height: 24)
             case .huge:
-                return CGSize(width: 32, height: 32)
+                return CGSize(width: 48, height: 48)
             }
         }
     }
@@ -83,7 +83,20 @@ public struct SymbolIcon: View {
     
     public var body: some View {
         image(with: name)
-            .frame(width: 20, height: 20)
+            .padding(size.dimensions.width / 5)
+            .background(
+                LinearGradient(
+                    gradient: Gradient(
+                        colors: [initialBackground, finalBackground]
+                    ),
+                    startPoint: .bottomLeading,
+                    endPoint: .topTrailing
+                )
+            )
+            .clipShape(
+                RoundedRectangle(cornerRadius: size.dimensions.width / 3)
+            )
+            // .frame(width: size.dimensions.width, height: size.dimensions.height)
     }
 }
 
@@ -102,6 +115,7 @@ public struct SettingsPage: View {
             HStack {
                 Spacer()
                 VStack {
+                    Spacer(minLength: 30) // scrollVerticalInset
                     ForEach(elements) { element in
                         render(element: element)
                     }
@@ -158,15 +172,40 @@ public struct SettingsPage: View {
     
     @ViewBuilder
     public func renderHeading(with config: PreferenceConfig) -> some View {
-        VStack {
+        VStack(spacing: 3) {
             if let icon = config.icon {
                 icon
             }
             Text(config.title)
+                .font(.system(size: 24, weight: .bold))
+            if let description = config.description {
+                if #available(macOS 13.0, *) {
+                    Text(description)
+                        .font(.system(size: 12))
+                        .foregroundStyle(theme.colors.foreground2)
+                        .frame(maxWidth: 360)
+                        .multilineTextAlignment(.center)
+                        .fixedSize(horizontal: false, vertical: true)
+                } else if #available(macOS 12.0, *) {
+                    Text(description)
+                        .font(.system(size: 12))
+                        .foregroundStyle(theme.colors.foreground2)
+                        .frame(maxWidth: 360)
+                        .multilineTextAlignment(.center)
+                        .fixedSize(horizontal: false, vertical: true)
+                } else {
+                    Text(description)
+                        .font(.system(size: 12))
+                        .foregroundColor(theme.colors.foreground2)
+                        .frame(maxWidth: 360)
+                        .multilineTextAlignment(.center)
+                        .fixedSize(horizontal: false, vertical: true)
+                }
+            }
         }
-        .frame(height: 40)
+        .frame(minHeight: 40)
         .padding(.horizontal, 10)
-        .padding(.vertical, 7)
+        .padding(.vertical, 16) // normally divided by 6, divided by 3 when large
     }
     
 }

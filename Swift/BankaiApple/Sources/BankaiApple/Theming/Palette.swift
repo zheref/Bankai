@@ -14,6 +14,8 @@ public struct Palette: Sendable {
     public let danger: Color
     
     public let foreground: Color
+    public let foreground2: Color
+    
     public let background1: Color
     public let border1: Color
     public let background2: Color
@@ -24,7 +26,7 @@ public struct Palette: Sendable {
     public let absolute: Color
     
     public let complementaryA: Color
-    public let complementeryB: Color
+    public let complementaryB: Color
     public let complementaryC: Color
     
     public init(
@@ -33,6 +35,7 @@ public struct Palette: Sendable {
         warning: Color,
         danger: Color,
         foreground: Color,
+        foreground2: Color,
         background1: Color,
         border1: Color,
         background2: Color,
@@ -41,7 +44,7 @@ public struct Palette: Sendable {
         border3: Color,
         absolute: Color,
         complementaryA: Color,
-        complementeryB: Color,
+        complementaryB: Color,
         complementaryC: Color
     ) {
         self.total = total
@@ -49,6 +52,7 @@ public struct Palette: Sendable {
         self.warning = warning
         self.danger = danger
         self.foreground = foreground
+        self.foreground2 = foreground2
         self.background1 = background1
         self.border1 = border1
         self.background2 = background2
@@ -57,7 +61,7 @@ public struct Palette: Sendable {
         self.border3 = border3
         self.absolute = absolute
         self.complementaryA = complementaryA
-        self.complementeryB = complementeryB
+        self.complementaryB = complementaryB
         self.complementaryC = complementaryC
     }
 }

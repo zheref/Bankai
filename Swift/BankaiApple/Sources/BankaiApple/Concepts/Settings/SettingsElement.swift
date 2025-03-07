@@ -61,9 +61,14 @@ public struct AnySettingsElement: SettingsElement {
     }
     
     @available(macOS 12.0, *)
-    public static func heading(_ key: String, titled title: String, icon: SymbolIcon? = nil) -> AnySettingsElement {
+    public static func heading(_ key: String, titled title: String, description: String? = nil, icon: SymbolIcon? = nil) -> AnySettingsElement {
         let r = SettingsPreference.heading(
-            PreferenceConfig(key: key, title: title, icon: icon)
+            PreferenceConfig(
+                key: key,
+                title: title,
+                description: description,
+                icon: icon
+            )
         )
         return r.eraseToAnySettingsElement()
     }
