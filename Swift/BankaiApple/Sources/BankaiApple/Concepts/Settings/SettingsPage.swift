@@ -25,10 +25,14 @@ public struct SettingsPage: View {
                     render(elements: group.elements, theme: theme)
                 }
             }
+            .frame(maxWidth: .infinity)
+            .background(theme.colors.background1)
         } else {
             NavigationView {
                 render(elements: elements, theme: theme)
             }
+            .frame(maxWidth: .infinity)
+            .background(theme.colors.background1)
         }
     }
     
@@ -45,7 +49,11 @@ public struct SettingsPage: View {
                 }
                 Spacer()
             }
+            .padding(.horizontal, theme.design.sizes.minimumHorizontalPadding)
+            .frame(maxWidth: theme.design.sizes.regularMaxListWidth)
         }
+        .background(theme.colors.background1)
+        .frame(maxWidth: .infinity)
     }
     
     @ViewBuilder
@@ -101,6 +109,7 @@ public struct SettingsPage: View {
                 Toggle(isOn: config.binding) {
                     EmptyView()
                 }
+                .toggleStyle(.switch)
             default:
                 EmptyView()
             }
