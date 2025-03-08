@@ -114,8 +114,8 @@ public struct SettingsPage: View {
         ScrollView(showsIndicators: false) {
             HStack {
                 Spacer()
-                VStack {
-                    Spacer(minLength: 30) // scrollVerticalInset
+                VStack(spacing: 30) {
+                    Spacer(minLength: 10) // scrollVerticalInset
                     ForEach(elements) { element in
                         render(element: element)
                     }
@@ -136,15 +136,33 @@ public struct SettingsPage: View {
     
     @ViewBuilder
     public func render(group: SettingsGroup) -> some View {
-        VStack(spacing: 0) {
-            ForEach(group.elements) { element in
-                render(element: element)
-                Divider()
+        switch group.presentationPreference {
+        case .preferOpenSection:
+            VStack(spacing: 0) {
+                ForEach(Array(group.elements.enumerated()), id: \.element) {
+                    (offset, element) in
+                    render(element: element)
+                    if offset < (group.elements.count - 1) {
+                        Divider()
+                    }
+                }
             }
+            .frame(maxWidth: 800, minHeight: 40)
+            .background(theme.colors.background2)
+            .innerCapsule(theme: theme)
+        case .preferNested:
+            // Navigation
+            VStack(spacing: 0) {
+                ForEach(group.elements) { element in
+                    render(element: element)
+                    Divider()
+                }
+            }
+            .frame(maxWidth: 800, minHeight: 40)
+            .background(theme.colors.background2)
+            .innerCapsule(theme: theme)
         }
-        .frame(maxWidth: 800, minHeight: 40)
-        .background(theme.colors.background2)
-        .innerCapsule(theme: theme)
+        
     }
     
     @ViewBuilder
@@ -153,18 +171,22 @@ public struct SettingsPage: View {
             renderHeading(with: config)
         } else {
             HStack(alignment: .center) {
+                if let icon = preference.icon {
+                    icon
+                }
                 Text(preference.title ?? "Untitled")
-                    .font(.system(size: 14))
+                    .font(.system(size: 13))
                 Spacer()
                 switch preference {
                 case .text(let config):
                     TextField(config.placeholder ?? "Enter text", text: config.binding)
                         .textFieldStyle(.plain)
+                        .multilineTextAlignment(.trailing)
                 default:
                     EmptyView()
                 }
             }
-            .frame(height: 40)
+            .frame(minHeight: 30)
             .padding(.horizontal, 10)
             .padding(.vertical, 7)
         }

@@ -156,6 +156,16 @@ public enum SettingsPreference: SettingsElement {
         case .picker(let config): return config.title
         }
     }
+    
+    public var icon: SymbolIcon? {
+        switch self {
+        case .heading(let config): return config.icon
+        case .fixed(let config): return config.icon
+        case .text(let config): return config.icon
+        case .toggle(let config): return config.icon
+        case .picker(let config): return config.icon
+        }
+    }
 }
 
 public struct PreferenceConfig: Hashable {
