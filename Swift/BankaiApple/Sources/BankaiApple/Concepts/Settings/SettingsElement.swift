@@ -10,6 +10,7 @@ import SwiftUI
 public protocol SettingsElement: Hashable, Identifiable {
     var key: String { get }
     var title: String? { get }
+    var icon: SymbolIcon? { get }
 }
 
 extension SettingsElement {
@@ -29,6 +30,7 @@ public struct AnySettingsElement: SettingsElement {
     
     public var key: String { originalValue.key }
     public var title: String? { originalValue.title }
+    public var icon: SymbolIcon? { originalValue.icon }
     
     public func hash(into hasher: inout Hasher) {
         hasher.combine(originalValue)
@@ -42,9 +44,11 @@ public struct AnySettingsElement: SettingsElement {
     
     public static func group(_ key: String,
                              titled title: String,
-                             with elements: [any SettingsElement]) -> AnySettingsElement {
+                             icon: SymbolIcon? = nil,
+                             with elements: [AnySettingsElement]) -> AnySettingsElement {
         let r = SettingsGroup(key: key,
                               title: title,
+                              icon: icon,
                               elements: elements,
                               presentationPreference: .preferNested)
         return r.eraseToAnySettingsElement()
@@ -81,7 +85,7 @@ public struct AnySettingsElement: SettingsElement {
         return r.eraseToAnySettingsElement()
     }
     
-    @available(macOS 12.0, *)
+    //@available(macOS 12.0, *)
     public static func toggle(_ key: String, titled title: String, icon: SymbolIcon) -> AnySettingsElement {
         let r = SettingsPreference.toggle(
             PreferenceConfig(key: key, title: title, icon: icon)
@@ -106,27 +110,41 @@ public enum SettingsGroupPresentation {
 public struct SettingsGroup: SettingsElement {
     public let key: String
     public let title: String?
+    public let icon: SymbolIcon?
     public let elements: [AnySettingsElement]
     public let presentationPreference: SettingsGroupPresentation
     
     public init(key: String,
                 title: String?,
+                icon: SymbolIcon? = nil,
                 elements: [AnySettingsElement],
                 presentationPreference: SettingsGroupPresentation) {
         self.key = key
         self.title = title
+        self.icon = icon
         self.elements = elements
         self.presentationPreference = presentationPreference
     }
     
     public init(key: String,
                 title: String?,
+                icon: SymbolIcon? = nil,
                 elements: [any SettingsElement],
                 presentationPreference: SettingsGroupPresentation) {
         self.init(key: key,
                   title: title,
+                  icon: icon,
                   elements: elements.map { $0.eraseToAnySettingsElement() },
                   presentationPreference: presentationPreference)
+    }
+    
+    public func hash(into hasher: inout Hasher) {
+        hasher.combine(key)
+        hasher.combine(title)
+    }
+    
+    public static func == (lhs: SettingsGroup, rhs: SettingsGroup) -> Bool {
+        lhs.key == rhs.key && lhs.title == rhs.title && lhs.elements == rhs.elements
     }
 }
 

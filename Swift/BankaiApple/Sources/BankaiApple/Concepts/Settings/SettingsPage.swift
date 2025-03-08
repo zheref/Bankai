@@ -18,17 +18,31 @@ public struct SettingsPage: View {
     }
     
     public var body: some View {
-        ScrollView(showsIndicators: false) {
-            HStack {
-                Spacer()
-                VStack(spacing: 30) {
-                    Spacer(minLength: 10) // scrollVerticalInset
-                    ForEach(elements) { element in
-                        render(element: element)
-                    }
-                }
-                Spacer()
+        if #available(macOS 13.0, *) {
+            ScrollView(showsIndicators: false) {
+                content
             }
+            .navigationDestination(for: SettingsGroup.self) { group in
+                SettingsPage(elements: group.elements, theme: theme)
+            }
+        } else {
+            ScrollView(showsIndicators: false) {
+                content
+            }
+        }
+    }
+    
+    @ViewBuilder
+    public var content: some View {
+        HStack {
+            Spacer()
+            VStack(spacing: 30) {
+                Spacer(minLength: 10) // scrollVerticalInset
+                ForEach(elements) { element in
+                    render(element: element)
+                }
+            }
+            Spacer()
         }
     }
     
@@ -58,16 +72,7 @@ public struct SettingsPage: View {
             .background(theme.colors.background2)
             .innerCapsule(theme: theme)
         case .preferNested:
-            // Navigation
-            VStack(spacing: 0) {
-                ForEach(group.elements) { element in
-                    render(element: element)
-                    Divider()
-                }
-            }
-            .frame(maxWidth: 800, minHeight: 40)
-            .background(theme.colors.background2)
-            .innerCapsule(theme: theme)
+            render(linkFor: group)
         }
         
     }
@@ -91,6 +96,44 @@ public struct SettingsPage: View {
                         .multilineTextAlignment(.trailing)
                 default:
                     EmptyView()
+                }
+            }
+            .frame(minHeight: 30)
+            .padding(.horizontal, 10)
+            .padding(.vertical, 7)
+        }
+    }
+    
+    @ViewBuilder
+    public func render(linkFor group: SettingsGroup) -> some View {
+        if #available(macOS 13.0, *) {
+            NavigationLink(value: group, label: {
+                HStack(alignment: .center) {
+                    if let icon = group.icon {
+                        icon
+                    }
+                    Text(group.title ?? "Untitled")
+                        .font(.system(size: 13))
+                    Spacer()
+                    Image(systemName: "chevron.right")
+                }
+            })
+            .buttonStyle(.plain)
+            .frame(minHeight: 30)
+            .padding(.horizontal, 10)
+            .padding(.vertical, 7)
+        } else {
+            NavigationLink {
+                SettingsPage(elements: group.elements, theme: theme)
+            } label: {
+                HStack(alignment: .center) {
+                    if let icon = group.icon {
+                        icon
+                    }
+                    Text(group.title ?? "Untitled")
+                        .font(.system(size: 13))
+                    Spacer()
+                    Image(nsImage: NSImage(named: "chevron.right")!)
                 }
             }
             .frame(minHeight: 30)
