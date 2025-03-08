@@ -64,31 +64,31 @@ public struct AnySettingsElement: SettingsElement {
         return r.eraseToAnySettingsElement()
     }
     
-    @available(macOS 12.0, *)
     public static func heading(_ key: String, titled title: String, description: String? = nil, icon: SymbolIcon? = nil) -> AnySettingsElement {
-        let r = SettingsPreference.heading(
-            PreferenceConfig(
-                key: key,
-                title: title,
-                description: description,
-                icon: icon
-            )
+        let r = SettingsPlacement(
+            key: key,
+            title: title,
+            icon: icon,
+            description: description,
+            style: .heading
         )
         return r.eraseToAnySettingsElement()
     }
     
     @available(macOS 12.0, *)
     public static func fixed(_ key: String, titled title: String, icon: SymbolIcon) -> AnySettingsElement {
-        let r = SettingsPreference.fixed(
-            PreferenceConfig(key: key, title: title, icon: icon)
+        let r = SettingsPlacement(
+            key: key,
+            title: title,
+            icon: icon,
+            style: .fixed
         )
         return r.eraseToAnySettingsElement()
     }
     
-    //@available(macOS 12.0, *)
     public static func toggle(_ key: String, titled title: String, icon: SymbolIcon) -> AnySettingsElement {
         let r = SettingsPreference.toggle(
-            PreferenceConfig(key: key, title: title, icon: icon)
+            PreferenceConfig(key: key, title: title, icon: icon, binding: .constant(false))
         )
         return r.eraseToAnySettingsElement()
     }
@@ -96,7 +96,7 @@ public struct AnySettingsElement: SettingsElement {
     @available(macOS 12.0, *)
     public static func text(_ key: String, titled title: String, icon: SymbolIcon) -> AnySettingsElement {
         let r = SettingsPreference.text(
-            PreferenceConfig(key: key, title: title, icon: icon)
+            PreferenceConfig(key: key, title: title, icon: icon, binding: .constant(""))
         )
         return r.eraseToAnySettingsElement()
     }
@@ -148,17 +148,44 @@ public struct SettingsGroup: SettingsElement {
     }
 }
 
+public struct SettingsPlacement: SettingsElement {
+    public enum Style {
+        case fixed
+        case heading
+    }
+    
+    public let key: String
+    public let title: String?
+    public let icon: SymbolIcon?
+    public let description: String?
+    public let style: Style
+    
+    public init(key: String, title: String?, icon: SymbolIcon?, description: String? = nil, style: Style = .fixed) {
+        self.key = key
+        self.title = title
+        self.icon = icon
+        self.description = description
+        self.style = style
+    }
+    
+    public func hash(into hasher: inout Hasher) {
+        hasher.combine(key)
+        hasher.combine(title)
+        hasher.combine(style)
+    }
+    
+    public static func == (lhs: SettingsPlacement, rhs: SettingsPlacement) -> Bool {
+        lhs.key == rhs.key && lhs.title == rhs.title && lhs.style == rhs.style
+    }
+}
+
 public enum SettingsPreference: SettingsElement {
-    case heading(PreferenceConfig)
-    case fixed(PreferenceConfig)
-    case text(PreferenceConfig)
-    case toggle(PreferenceConfig)
-    case picker(PreferenceConfig)
+    case text(PreferenceConfig<String>)
+    case toggle(PreferenceConfig<Bool>)
+    case picker(PreferenceConfig<String>)
     
     public var key: String {
         switch self {
-        case .heading(let config): return config.key
-        case .fixed(let config): return config.key
         case .text(let config): return config.key
         case .toggle(let config): return config.key
         case .picker(let config): return config.key
@@ -167,8 +194,6 @@ public enum SettingsPreference: SettingsElement {
     
     public var title: String? {
         switch self {
-        case .heading(let config): return config.title
-        case .fixed(let config): return config.title
         case .text(let config): return config.title
         case .toggle(let config): return config.title
         case .picker(let config): return config.title
@@ -177,8 +202,6 @@ public enum SettingsPreference: SettingsElement {
     
     public var icon: SymbolIcon? {
         switch self {
-        case .heading(let config): return config.icon
-        case .fixed(let config): return config.icon
         case .text(let config): return config.icon
         case .toggle(let config): return config.icon
         case .picker(let config): return config.icon
@@ -186,22 +209,22 @@ public enum SettingsPreference: SettingsElement {
     }
 }
 
-public struct PreferenceConfig: Hashable {
+public struct PreferenceConfig<T: Equatable>: Hashable {
     public let key: String
     public let title: String
-    public let binding: Binding<String>
+    public let binding: Binding<T>
     public let description: String?
     public let icon: SymbolIcon?
     public let placeholder: String?
     
     
-    public init(key: String, title: String, description: String? = nil, icon: SymbolIcon? = nil, placeholder: String? = nil, binding: Binding<String>? = nil) {
+    public init(key: String, title: String, description: String? = nil, icon: SymbolIcon? = nil, placeholder: String? = nil, binding: Binding<T>) {
         self.key = key
         self.title = title
         self.description = description
         self.icon = icon
         self.placeholder = placeholder
-        self.binding = binding ?? .constant("")
+        self.binding = binding
     }
     
     public func hash(into hasher: inout Hasher) {

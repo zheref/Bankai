@@ -54,6 +54,10 @@ public struct SettingsPage: View {
             render(group: group)
         } else if let preference = element.originalValue as? SettingsPreference {
             render(preference: preference)
+        } else if let placement = element.originalValue as? SettingsPlacement {
+            renderHeading(for: placement)
+        } else {
+            EmptyView()
         }
     }
     
@@ -81,29 +85,29 @@ public struct SettingsPage: View {
     
     @ViewBuilder
     public func render(preference: SettingsPreference) -> some View {
-        if case .heading(let config) = preference {
-            renderHeading(with: config)
-        } else {
-            HStack(alignment: .center) {
-                if let icon = preference.icon {
-                    icon
-                }
-                Text(preference.title ?? "Untitled")
-                    .font(.system(size: 13))
-                Spacer()
-                switch preference {
-                case .text(let config):
-                    TextField(config.placeholder ?? "Enter text", text: config.binding)
-                        .textFieldStyle(.plain)
-                        .multilineTextAlignment(.trailing)
-                default:
+        HStack(alignment: .center) {
+            if let icon = preference.icon {
+                icon
+            }
+            Text(preference.title ?? "Untitled")
+                .font(.system(size: 13))
+            Spacer()
+            switch preference {
+            case .text(let config):
+                TextField(config.placeholder ?? "Enter text", text: config.binding)
+                    .textFieldStyle(.plain)
+                    .multilineTextAlignment(.trailing)
+            case .toggle(let config):
+                Toggle(isOn: config.binding) {
                     EmptyView()
                 }
+            default:
+                EmptyView()
             }
-            .frame(minHeight: 30)
-            .padding(.horizontal, 10)
-            .padding(.vertical, 7)
         }
+        .frame(minHeight: 30)
+        .padding(.horizontal, 10)
+        .padding(.vertical, 7)
     }
     
     @ViewBuilder
@@ -145,14 +149,14 @@ public struct SettingsPage: View {
     }
     
     @ViewBuilder
-    public func renderHeading(with config: PreferenceConfig) -> some View {
+    public func renderHeading(for placement: SettingsPlacement) -> some View {
         VStack(spacing: 3) {
-            if let icon = config.icon {
+            if let icon = placement.icon {
                 icon
             }
-            Text(config.title)
+            Text(placement.title ?? "Untitled")
                 .font(.system(size: 24, weight: .bold))
-            if let description = config.description {
+            if let description = placement.description {
                 if #available(macOS 13.0, *) {
                     Text(description)
                         .font(.system(size: 12))
