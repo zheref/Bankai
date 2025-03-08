@@ -19,30 +19,32 @@ public struct SettingsPage: View {
     
     public var body: some View {
         if #available(macOS 13.0, *) {
-            ScrollView(showsIndicators: false) {
-                content
-            }
-            .navigationDestination(for: SettingsGroup.self) { group in
-                SettingsPage(elements: group.elements, theme: theme)
+            NavigationStack {
+                render(elements: elements, theme: theme)
+                .navigationDestination(for: SettingsGroup.self) { group in
+                    render(elements: group.elements, theme: theme)
+                }
             }
         } else {
-            ScrollView(showsIndicators: false) {
-                content
+            NavigationView {
+                render(elements: elements, theme: theme)
             }
         }
     }
     
     @ViewBuilder
-    public var content: some View {
-        HStack {
-            Spacer()
-            VStack(spacing: 30) {
-                Spacer(minLength: 10) // scrollVerticalInset
-                ForEach(elements) { element in
-                    render(element: element)
+    public func render(elements: [AnySettingsElement], theme: StyleTheme = .cocoa) -> some View {
+        ScrollView(showsIndicators: false) {
+            HStack {
+                Spacer()
+                VStack(spacing: 30) {
+                    Spacer(minLength: 10) // scrollVerticalInset
+                    ForEach(elements) { element in
+                        render(element: element)
+                    }
                 }
+                Spacer()
             }
-            Spacer()
         }
     }
     
@@ -124,7 +126,7 @@ public struct SettingsPage: View {
             .padding(.vertical, 7)
         } else {
             NavigationLink {
-                SettingsPage(elements: group.elements, theme: theme)
+                render(elements: group.elements, theme: theme)
             } label: {
                 HStack(alignment: .center) {
                     if let icon = group.icon {
