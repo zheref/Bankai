@@ -11,18 +11,25 @@ public struct SettingsPage: View {
     
     public let elements: [AnySettingsElement]
     public let theme: StyleTheme
+    public let os: OSEnv
     
-    public init(elements: [AnySettingsElement], theme: StyleTheme = .cocoa) {
+    public init(
+        elements: [AnySettingsElement],
+        theme: StyleTheme = .cocoa,
+        os: OSEnv? = nil
+    ) {
         self.elements = elements
         self.theme = theme
+        self.os = os ?? .latestAvailable
     }
     
     public var body: some View {
-        if #available(macOS 13.0, *) {
+        if #available(macOS 13.0, *), os.isAtLeast(.ventura) {
             NavigationStack {
                 render(elements: elements, theme: theme)
                 .navigationDestination(for: SettingsGroup.self) { group in
                     render(elements: group.elements, theme: theme)
+                        .navigationTitle(group.title ?? "")
                 }
             }
             .frame(maxWidth: .infinity)
@@ -121,7 +128,7 @@ public struct SettingsPage: View {
     
     @ViewBuilder
     public func render(linkFor group: SettingsGroup) -> some View {
-        if #available(macOS 13.0, *) {
+        if #available(macOS 13.0, *), os.isAtLeast(.ventura) {
             NavigationLink(value: group, label: {
                 HStack(alignment: .center) {
                     if let icon = group.icon {
@@ -134,6 +141,28 @@ public struct SettingsPage: View {
                 }
             })
             .buttonStyle(.plain)
+            .frame(minHeight: 30)
+            .padding(.horizontal, 10)
+            .padding(.vertical, 7)
+        } else if #available(macOS 11.0, *), os.isAtLeast(.bigSur) {
+            NavigationLink {
+                render(elements: group.elements, theme: theme)
+                    .navigationSubtitle(group.title ?? "")
+            } label: {
+                HStack(alignment: .center) {
+                    if let icon = group.icon {
+                        icon
+                    }
+                    Text(group.title ?? "Untitled")
+                        .font(.system(size: 13))
+                    Spacer()
+                    Image(
+                        nsImage: NSImage(
+                            named: NSImage.rightFacingTriangleTemplateName
+                        )!
+                    )
+                }
+            }
             .frame(minHeight: 30)
             .padding(.horizontal, 10)
             .padding(.vertical, 7)
@@ -166,14 +195,14 @@ public struct SettingsPage: View {
             Text(placement.title ?? "Untitled")
                 .font(.system(size: 24, weight: .bold))
             if let description = placement.description {
-                if #available(macOS 13.0, *) {
+                if #available(macOS 13.0, *), os.isAtLeast(.ventura) {
                     Text(description)
                         .font(.system(size: 12))
                         .foregroundStyle(theme.colors.foreground2)
                         .frame(maxWidth: 360)
                         .multilineTextAlignment(.center)
                         .fixedSize(horizontal: false, vertical: true)
-                } else if #available(macOS 12.0, *) {
+                } else if #available(macOS 12.0, *), os.isAtLeast(.monterey) {
                     Text(description)
                         .font(.system(size: 12))
                         .foregroundStyle(theme.colors.foreground2)

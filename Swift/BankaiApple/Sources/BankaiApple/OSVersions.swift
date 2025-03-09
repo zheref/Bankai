@@ -5,6 +5,14 @@
 //  Created by Sergio Daniel on 18/12/24.
 //
 
+import Foundation
+
+#if os(iOS)
+import UIKit
+#elseif os(macOS)
+import AppKit
+#endif
+
 public typealias VersionDecimal = Double
 
 public enum OSVersion: Comparable, Sendable {
@@ -97,7 +105,7 @@ public enum OSVersion: Comparable, Sendable {
     }
 }
 
-public class OSEnv {
+public class OSEnv: Hashable {
     public typealias VersionStringResolver = () -> String
     
     @MainActor private static var _current: OSEnv?
@@ -107,19 +115,33 @@ public class OSEnv {
         set {
             _current = newValue
             print(
-                "Current environment initialized as: \(String(describing: _current?.TargetVersion))"
+                "Current environment initialized as: \(String(describing: _current?.targetVersion))"
             )
+        }
+    }
+    
+    @MainActor public static var latestAvailable: OSEnv {
+        .init(enforcing: .latest) {
+            #if os(macOS)
+            ProcessInfo.processInfo.operatingSystemVersionString
+            #else
+            UIDevice.current.systemVersion
+            #endif
         }
     }
     
     @MainActor public static func prior(to expectedVersion: OSVersion) -> Bool {
         guard let current else { return false }
-        return current.TargetVersion < expectedVersion
+        return current.targetVersion < expectedVersion
     }
     
     @MainActor public static func isAtLeast(_ expectedVersion: OSVersion) -> Bool {
         guard let current else { return true }
-        return current.TargetVersion >= expectedVersion
+        return current.isAtLeast(expectedVersion)
+    }
+    
+    public func isAtLeast(_ expectedVersion: OSVersion) -> Bool {
+        targetVersion >= expectedVersion
     }
     
     /// Earliest version supported by Kro
@@ -161,7 +183,14 @@ public class OSEnv {
     /// Virtual target version at compile time. If enforced is not set,
     /// it will resolve to latest version supported by Kro.
     /// See and/or override "Latest".
-    public var TargetVersion: OSVersion { enforced ?? Self.latestSupported }
+    public var targetVersion: OSVersion { enforced ?? Self.latestSupported }
     
+    public func hash(into hasher: inout Hasher) {
+        hasher.combine(targetVersion)
+    }
+    
+    public static func == (lhs: OSEnv, rhs: OSEnv) -> Bool {
+        return lhs.targetVersion == rhs.targetVersion
+    }
     
 }
