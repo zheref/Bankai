@@ -13,6 +13,8 @@ public struct SettingsPage: View {
     public let theme: StyleTheme
     public let os: OSEnv
     
+    @State private var navigatedElement: AnySettingsElement?
+    
     public init(
         elements: [AnySettingsElement],
         theme: StyleTheme = .cocoa,
@@ -23,8 +25,43 @@ public struct SettingsPage: View {
         self.os = os ?? .latestAvailable
     }
     
+    public func isActive(_ evaluated: any SettingsElement) -> Binding<Bool> {
+        .init(
+            get: { navigatedElement == evaluated.eraseToAnySettingsElement()
+ },
+            set: {
+                if $0 {
+                    navigatedElement = evaluated.eraseToAnySettingsElement()
+                }
+            }
+        )
+    }
+    
+    #if os(macOS)
     public var body: some View {
-        if #available(macOS 13.0, iOS 16.0, *), os.isAtLeast(.ventura) {
+        if #available(macOS 13.0, *), os.isAtLeast(.ventura) {
+            NavigationStack {
+                render(elements: elements, theme: theme)
+                .navigationDestination(for: SettingsGroup.self) { group in
+                    render(elements: group.elements, theme: theme)
+                        .navigationTitle(group.title ?? "")
+                }
+            }
+            .frame(maxWidth: .infinity)
+            .background(theme.colors.background1)
+        } else {
+            NavigationView {
+                render(elements: elements, theme: theme)
+                    .frame(minWidth: 480)
+                    .frame(width: 640)
+                    .frame(maxWidth: 800)
+                    .background(theme.colors.background1)
+            }
+        }
+    }
+    #else
+    public var body: some View {
+        if #available(iOS 16.0, *) {
             NavigationStack {
                 render(elements: elements, theme: theme)
                 .navigationDestination(for: SettingsGroup.self) { group in
@@ -38,10 +75,12 @@ public struct SettingsPage: View {
             NavigationView {
                 render(elements: elements, theme: theme)
             }
+            .navigationViewStyle(.stack)
             .frame(maxWidth: .infinity)
             .background(theme.colors.background1)
         }
     }
+    #endif
     
     @ViewBuilder
     public func render(elements: [AnySettingsElement], theme: StyleTheme = .cocoa) -> some View {
@@ -145,7 +184,7 @@ public struct SettingsPage: View {
             .padding(.horizontal, 10)
             .padding(.vertical, 7)
         } else if #available(macOS 11.0, *), os.isAtLeast(.bigSur) {
-            NavigationLink {
+            NavigationLink(isActive: isActive(group)) {
                 render(elements: group.elements, theme: theme)
                     .navigationSubtitle(group.title ?? "")
             } label: {
@@ -163,6 +202,7 @@ public struct SettingsPage: View {
                     )
                 }
             }
+            .buttonStyle(.plain)
             .frame(minHeight: 30)
             .padding(.horizontal, 10)
             .padding(.vertical, 7)
@@ -177,7 +217,11 @@ public struct SettingsPage: View {
                     Text(group.title ?? "Untitled")
                         .font(.system(size: 13))
                     Spacer()
-                    Image(nsImage: NSImage(named: "chevron.right")!)
+                    Image(
+                        nsImage: NSImage(
+                            named: NSImage.rightFacingTriangleTemplateName
+                        )!
+                    )
                 }
             }
             .frame(minHeight: 30)
