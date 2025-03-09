@@ -7,7 +7,7 @@
 
 import SwiftUI
 
-public struct Palette: Sendable {
+public struct Palette: Sendable, Hashable {
     public let total: Color
     public let accent: Color
     public let warning: Color

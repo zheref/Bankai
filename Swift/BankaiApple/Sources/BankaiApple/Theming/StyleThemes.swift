@@ -12,7 +12,7 @@ import SwiftUI
 // Design Language -> Design (Sizes, Spacing, Paddings, etc)
 // Typography -> FontMap
 
-public struct StyleTheme {
+public struct StyleTheme: Hashable {
     public let name: String
     public let design: Design
     public let colors: Palette
@@ -21,6 +21,17 @@ public struct StyleTheme {
         self.name = name
         self.design = design
         self.colors = colors
+    }
+}
+
+extension StyleTheme {
+    public static func == (lhs: StyleTheme, rhs: StyleTheme) -> Bool {
+        return lhs.name == rhs.name
+    }
+    
+    public func hash(into hasher: inout Hasher) {
+        hasher.combine(name)
+        hasher.combine(colors)
     }
 }
 
