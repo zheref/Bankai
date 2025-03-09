@@ -24,18 +24,18 @@ extension Palette {
         let border3Color = Color(.unemphasizedSelectedContentBackgroundColor)
         let absoluteColor = Color(.textBackgroundColor)
         #else
-        let totalColor = Color(uiColor: .quinaryLabel)
+        let totalColor = Color.primary
         let warningColor = Color(uiColor: .systemYellow)
         let dangerColor = Color(uiColor: .systemRed)
-        let foregroundColor = Color(uiColor: .labelColor)
-        let foreground2Color = Color(uiColor: .secondaryLabelColor)
-        let background1Color = Color(uiColor: .windowBackgroundColor)
-        let border1Color = Color(uiColor: .separatorColor)
-        let background2Color = Color(uiColor: .controlBackgroundColor)
-        let border2Color = Color(uiColor: .gridColor)
-        let background3Color = Color(uiColor: .underPageBackgroundColor)
-        let border3Color = Color(uiColor: .unemphasizedSelectedContentBackgroundColor)
-        let absoluteColor = Color(uiColor: .textBackgroundColor)
+        let foregroundColor = Color(uiColor: .label)
+        let foreground2Color = Color(uiColor: .secondaryLabel)
+        let background1Color = Color(uiColor: .systemBackground)
+        let border1Color = Color(uiColor: .separator)
+        let background2Color = Color(uiColor: .secondarySystemBackground)
+        let border2Color = Color(uiColor: .secondarySystemGroupedBackground)
+        let background3Color = Color(uiColor: .tertiarySystemBackground)
+        let border3Color = Color(uiColor: .tertiarySystemGroupedBackground)
+        let absoluteColor = Color(uiColor: .systemFill)
         #endif
         
         return .init(

@@ -24,7 +24,7 @@ public struct SettingsPage: View {
     }
     
     public var body: some View {
-        if #available(macOS 13.0, *), os.isAtLeast(.ventura) {
+        if #available(macOS 13.0, iOS 16.0, *), os.isAtLeast(.ventura) {
             NavigationStack {
                 render(elements: elements, theme: theme)
                 .navigationDestination(for: SettingsGroup.self) { group in

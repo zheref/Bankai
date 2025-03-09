@@ -136,7 +136,7 @@ extension SignUpBox {
     
 }
 
-@available(macOS 14.0, *)
+@available(macOS 14.0, iOS 17.0, *)
 #Preview("Expecting Information") {
     @Previewable @State var email: String = ""
     

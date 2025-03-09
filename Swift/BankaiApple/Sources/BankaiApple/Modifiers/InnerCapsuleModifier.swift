@@ -47,7 +47,7 @@ public enum PreviewField {
     case input
 }
 
-@available(macOS 14.0, *)
+@available(macOS 14.0, iOS 17.0, *)
 #Preview {
     @Previewable @State var someInput: String = ""
     @FocusState var focusedField: PreviewField?
