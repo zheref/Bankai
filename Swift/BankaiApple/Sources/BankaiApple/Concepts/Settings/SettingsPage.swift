@@ -165,6 +165,7 @@ public struct SettingsPage: View {
         .padding(.vertical, 7)
     }
     
+    #if os(macOS)
     @ViewBuilder
     public func render(linkFor group: SettingsGroup) -> some View {
         if #available(macOS 13.0, *), os.isAtLeast(.ventura) {
@@ -229,7 +230,50 @@ public struct SettingsPage: View {
             .padding(.vertical, 7)
         }
     }
+    #else
+    @ViewBuilder
+    public func render(linkFor group: SettingsGroup) -> some View {
+        if #available(iOS 16.0, *), os.isAtLeast(.v16) {
+            NavigationLink(value: group, label: {
+                HStack(alignment: .center) {
+                    if let icon = group.icon {
+                        icon
+                    }
+                    Text(group.title ?? "Untitled")
+                        .font(.system(size: 13))
+                    Spacer()
+                    Image(systemName: "chevron.right")
+                }
+            })
+            .buttonStyle(.plain)
+            .frame(minHeight: 30)
+            .padding(.horizontal, 10)
+            .padding(.vertical, 7)
+        } else {
+            NavigationLink(isActive: isActive(group)) {
+                render(elements: group.elements, theme: theme)
+            } label: {
+                HStack(alignment: .center) {
+                    if let icon = group.icon {
+                        icon
+                    }
+                    Text(group.title ?? "Untitled")
+                        .font(.system(size: 13))
+                    Spacer()
+                    Image(
+                        uiImage: UIImage(systemName: "chevron.right")!
+                    )
+                }
+            }
+            .buttonStyle(.plain)
+            .frame(minHeight: 30)
+            .padding(.horizontal, 10)
+            .padding(.vertical, 7)
+        }
+    }
+    #endif
     
+    #if os(macOS)
     @ViewBuilder
     public func renderHeading(for placement: SettingsPlacement) -> some View {
         VStack(spacing: 3) {
@@ -267,6 +311,38 @@ public struct SettingsPage: View {
         .padding(.horizontal, 10)
         .padding(.vertical, 16) // normally divided by 6, divided by 3 when large
     }
+    #else
+    public func renderHeading(for placement: SettingsPlacement) -> some View {
+        VStack(spacing: 3) {
+            if let icon = placement.icon {
+                icon
+            }
+            Text(placement.title ?? "Untitled")
+                .font(.system(size: 24, weight: .bold))
+            if let description = placement.description {
+                if #available(iOS 16.0, *), os.isAtLeast(.v16) {
+                    Text(description)
+                        .font(.system(size: 12))
+                        .foregroundStyle(theme.colors.foreground2)
+                        .frame(maxWidth: 360)
+                        .multilineTextAlignment(.center)
+                        .fixedSize(horizontal: false, vertical: true)
+                } else {
+                    Text(description)
+                        .font(.system(size: 12))
+                        .foregroundStyle(theme.colors.foreground2)
+                        .frame(maxWidth: 360)
+                        .multilineTextAlignment(.center)
+                        .fixedSize(horizontal: false, vertical: true)
+                }
+            }
+            
+        }
+        .frame(minHeight: 40)
+        .padding(.horizontal, 10)
+        .padding(.vertical, 16) // normally divided by 6, divided by 3 when large
+    }
+    #endif
     
 }
 

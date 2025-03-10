@@ -17,7 +17,7 @@ import SwiftUI
 
 public enum ReturnPressResolution { case handled, ignored }
 
-@available(macOS 12.0, *)
+@available(macOS 12.0, iOS 17.0, *)
 public struct OnReturnPressModifier: ViewModifier {
     
     let action: () -> ReturnPressResolution
@@ -58,7 +58,7 @@ public struct OnReturnPressModifier: ViewModifier {
     
 }
 
-@available(macOS 12.0, *)
+@available(macOS 12.0, iOS 17.0, *)
 extension View {
     
     public func onReturnPress(perform action: @escaping () -> ReturnPressResolution) -> some View {

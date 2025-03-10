@@ -7,7 +7,7 @@
 
 import SwiftUI
 
-@available(macOS 12.0, *)
+@available(macOS 12.0, iOS 17.0, *)
 public struct TextInput<FocusedField: Hashable>: View {
     
     @Binding var text: String
@@ -86,7 +86,7 @@ public struct TextInput<FocusedField: Hashable>: View {
     
 }
 
-@available(macOS 14.0, *)
+@available(macOS 14.0, iOS 17.0, *)
 #Preview {
     @Previewable @State var text: String = ""
     @Previewable @FocusState var focusedField: AnyHashable?
