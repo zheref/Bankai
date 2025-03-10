@@ -8,26 +8,26 @@
 import SwiftUI
 
 @available(macOS 12.0, *)
-public struct TextInput: View {
+public struct TextInput<FocusedField: Hashable>: View {
     
     @Binding var text: String
-    var focusedField: FocusState<AnyHashable?>.Binding
-    var focusedKey: AnyHashable?
+    var focusedField: FocusState<FocusedField?>.Binding
+    var focusedKey: FocusedField?
     let icon: Image?
     let placeholder: String
     let onSubmit: () -> Void
-    let resolveReadyToConfirm: () -> Bool
+    let resolveReadyToConfirm: (String) -> Bool
     let ctaTitle: String?
     let theme: StyleTheme
     
     public init(
         text: Binding<String>,
-        focusedField: FocusState<AnyHashable?>.Binding,
-        focusedKey: AnyHashable?,
+        focusedField: FocusState<FocusedField?>.Binding,
+        focusedKey: FocusedField?,
         icon: Image? = nil,
         placeholder: String = "",
         onSubmit: @escaping () -> Void = { },
-        resolveReadyToConfirm: @escaping () -> Bool = { true },
+        resolveReadyToConfirm: @escaping (String) -> Bool = { _ in true },
         ctaTitle: String? = nil,
         theme: StyleTheme = .cocoa
     ) {
@@ -40,6 +40,10 @@ public struct TextInput: View {
         self.resolveReadyToConfirm = resolveReadyToConfirm
         self.ctaTitle = ctaTitle
         self.theme = theme
+    }
+    
+    private var isFocused: Bool {
+        focusedField.wrappedValue == focusedKey
     }
     
     public var body: some View {
@@ -63,7 +67,7 @@ public struct TextInput: View {
             
             Spacer()
             
-            if let ctaTitle, resolveReadyToConfirm() {
+            if let ctaTitle, isFocused, resolveReadyToConfirm(text) {
                 Button {
                     onSubmit()
                 } label: {
@@ -75,7 +79,7 @@ public struct TextInput: View {
         .frame(minHeight: 40)
         .background(theme.colors.background2)
         .innerCapsule(
-            isFocused: focusedField.wrappedValue == focusedKey,
+            isFocused: isFocused,
             theme: theme
         )
     }
@@ -96,7 +100,7 @@ public struct TextInput: View {
                 icon: Image(systemName: "plus"),
                 placeholder: "Type something here",
                 resolveReadyToConfirm: {
-                    !text.isEmpty
+                    !$0.isEmpty
                 },
                 ctaTitle: "Add"
             )
@@ -104,4 +108,5 @@ public struct TextInput: View {
     }
     .padding()
     .frame(width: 480, height: 320)
+    .background(StyleTheme.cocoa.colors.background1)
 }
