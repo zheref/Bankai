@@ -39,7 +39,6 @@ public struct AnySettingsElement: SettingsElement {
     public static func == (lhs: AnySettingsElement,
                            rhs: AnySettingsElement) -> Bool {
         lhs.key == rhs.key
-            && type(of: lhs.originalValue) == type(of: rhs.originalValue)
     }
     
     public static func group(_ key: String,
@@ -64,7 +63,10 @@ public struct AnySettingsElement: SettingsElement {
         return r.eraseToAnySettingsElement()
     }
     
-    public static func heading(_ key: String, titled title: String, description: String? = nil, icon: SymbolIcon? = nil) -> AnySettingsElement {
+    public static func heading(_ key: String,
+                               titled title: String,
+                               description: String? = nil,
+                               icon: SymbolIcon? = nil) -> AnySettingsElement {
         let r = SettingsPlacement(
             key: key,
             title: title,
@@ -76,7 +78,9 @@ public struct AnySettingsElement: SettingsElement {
     }
     
     @available(macOS 12.0, *)
-    public static func fixed(_ key: String, titled title: String, icon: SymbolIcon) -> AnySettingsElement {
+    public static func fixed(_ key: String,
+                             titled title: String,
+                             icon: SymbolIcon) -> AnySettingsElement {
         let r = SettingsPlacement(
             key: key,
             title: title,
@@ -86,7 +90,9 @@ public struct AnySettingsElement: SettingsElement {
         return r.eraseToAnySettingsElement()
     }
     
-    public static func toggle(_ key: String, titled title: String, icon: SymbolIcon) -> AnySettingsElement {
+    public static func toggle(_ key: String,
+                              titled title: String,
+                              icon: SymbolIcon) -> AnySettingsElement {
         let r = SettingsPreference.toggle(
             PreferenceConfig(key: key, title: title, icon: icon, binding: .constant(false))
         )
