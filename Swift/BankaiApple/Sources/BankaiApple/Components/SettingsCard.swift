@@ -15,24 +15,25 @@ public struct SettingsCard<Description: View, Content: View>: View {
     let header: String?
     let description: Description
     let content: Content
-    let backgroundColor: Color
+    let theme: StyleTheme
     
     // Initilializer
     public init(
         header: String? = nil,
-        backgroundColor: Color = Color.white,
+        theme: StyleTheme = .cocoa,
         @ViewBuilder description: () -> Description,
         @ViewBuilder content: () -> Content
     ) {
         self.header = header
         self.description = description()
         self.content = content()
-        self.backgroundColor = backgroundColor
+        self.theme = theme
     }
     
     // Render
     
     public var body: some View {
+        #if os(macOS)
         HStack {
             VStack(alignment: .leading) {
                 if let header {
@@ -46,12 +47,29 @@ public struct SettingsCard<Description: View, Content: View>: View {
             content
         }
         .padding(20)
-        .background(self.backgroundColor)
+        .background(theme.colors.background1)
         .cornerRadius(10)
+        #else
+        Section {
+            HStack {
+                VStack(alignment: .leading) {
+                    if let header {
+                        Text(header)
+                            .font(.system(size: 14, weight: .semibold))
+                            .padding(.bottom, 0.5)
+                    }
+                    description
+                }
+                Spacer()
+                content
+            }
+        }
+        #endif
     }
     
 }
 
+#if os(macOS)
 #Preview("A common settings card") {
     VStack {
         SettingsCard(header: "A Simple Header") {
@@ -75,3 +93,17 @@ public struct SettingsCard<Description: View, Content: View>: View {
     .frame(width: 600, height: 600)
     .padding()
 }
+#else
+#Preview("A common settings card") {
+    List {
+        SettingsCard(header: "A Simple Header") {
+            Text("You should probably tap the action on the right.")
+                .font(.caption)
+        } content: {
+            Button("Do this!") {}
+                .buttonStyle(.borderedProminent)
+        }
+    }
+    .background(StyleTheme.cocoa.colors.background1)
+}
+#endif
