@@ -62,8 +62,7 @@ extension Palette {
 
 extension StyleTheme {
     
-    @MainActor
-    public static let cocoa: StyleTheme = .init(
+    static let cocoa: StyleTheme = .init(
         name: "Cocoa",
         design: DesignLanguage.cocoa,
         colors: Palette.common

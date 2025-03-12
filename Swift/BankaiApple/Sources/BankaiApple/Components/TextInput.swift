@@ -29,7 +29,7 @@ public struct TextInput<FocusedField: Hashable>: View {
         onSubmit: @escaping () -> Void = { },
         resolveReadyToConfirm: @escaping (String) -> Bool = { _ in true },
         ctaTitle: String? = nil,
-        theme: StyleTheme = .cocoa
+        theme: StyleTheme? = nil
     ) {
         self._text = text
         self.focusedField = focusedField
@@ -39,7 +39,7 @@ public struct TextInput<FocusedField: Hashable>: View {
         self.onSubmit = onSubmit
         self.resolveReadyToConfirm = resolveReadyToConfirm
         self.ctaTitle = ctaTitle
-        self.theme = theme
+        self.theme = theme ?? .cocoa
     }
     
     private var isFocused: Bool {

@@ -20,14 +20,14 @@ public struct SettingsCard<Description: View, Content: View>: View {
     // Initilializer
     public init(
         header: String? = nil,
-        theme: StyleTheme = .cocoa,
+        theme: StyleTheme? = nil,
         @ViewBuilder description: () -> Description,
         @ViewBuilder content: () -> Content
     ) {
         self.header = header
         self.description = description()
         self.content = content()
-        self.theme = theme
+        self.theme = theme ?? .cocoa
     }
     
     // Render
