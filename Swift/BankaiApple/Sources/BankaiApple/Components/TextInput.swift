@@ -78,9 +78,13 @@ public struct TextInput<FocusedField: Hashable>: View {
         .padding(10)
         .frame(minHeight: 40)
         .background(theme.colors.background2)
-        .innerCapsule(
-            isFocused: isFocused,
-            theme: theme
+        .clipShape(RoundedRectangle(cornerRadius: 10))
+        .overlay(
+            RoundedRectangle(cornerRadius: 10)
+                .stroke(
+                    isFocused ? theme.colors.accent : theme.colors.background3,
+                    lineWidth: 1
+                )
         )
     }
     
