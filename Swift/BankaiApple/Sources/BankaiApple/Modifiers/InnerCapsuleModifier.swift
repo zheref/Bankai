@@ -7,7 +7,7 @@
 
 import SwiftUI
 
-public struct InnerCapsuleModifier: ViewModifier {
+struct InnerCapsuleModifier: ViewModifier {
     
     public let cornerRadius: CGFloat
     public let isFocused: Bool
@@ -35,7 +35,7 @@ public struct InnerCapsuleModifier: ViewModifier {
 
 extension View {
     
-    public func innerCapsule(cornerRadius: CGFloat = 10, isFocused: Bool = false, theme: StyleTheme = .cocoa) -> some View {
+    public func bankaiCapsule(cornerRadius: CGFloat = 10, isFocused: Bool = false, theme: StyleTheme = .cocoa) -> some View {
         modifier(
             InnerCapsuleModifier(cornerRadius: cornerRadius, isFocused: isFocused, theme: theme)
         )
@@ -65,7 +65,7 @@ public enum PreviewField {
         .padding(10)
         .frame(minHeight: 40)
         .background(StyleTheme.cocoa.colors.background2)
-        .innerCapsule(isFocused: focusedField == .input)
+        .bankaiCapsule(isFocused: focusedField == .input)
     }
     .background(Color.gray)
     .frame(width: 640, height: 480)

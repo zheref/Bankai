@@ -142,7 +142,7 @@ public struct SettingsPage: View {
                 }
             }
             .frame(maxWidth: 800, minHeight: 40)
-            .innerCapsule(theme: theme)
+            .bankaiCapsule(theme: theme)
         case .preferNested:
             render(linkFor: group)
         }
