@@ -92,17 +92,33 @@ public struct AnySettingsElement: SettingsElement {
     
     public static func toggle(_ key: String,
                               titled title: String,
+                              defaultValue: Bool = false,
                               icon: SymbolIcon) -> AnySettingsElement {
         let r = SettingsPreference.toggle(
-            PreferenceConfig(key: key, title: title, icon: icon, binding: .constant(false))
+            PreferenceConfig(
+                key: key,
+                title: title,
+                defaultValue: defaultValue,
+                icon: icon,
+                binding: .constant(false)
+            )
         )
         return r.eraseToAnySettingsElement()
     }
     
     @available(macOS 12.0, *)
-    public static func text(_ key: String, titled title: String, icon: SymbolIcon) -> AnySettingsElement {
+    public static func text(_ key: String,
+                            titled title: String,
+                            defaultValue: String = "",
+                            icon: SymbolIcon) -> AnySettingsElement {
         let r = SettingsPreference.text(
-            PreferenceConfig(key: key, title: title, icon: icon, binding: .constant(""))
+            PreferenceConfig(
+                key: key,
+                title: title,
+                defaultValue: defaultValue,
+                icon: icon,
+                binding: .constant("")
+            )
         )
         return r.eraseToAnySettingsElement()
     }
@@ -222,11 +238,13 @@ public struct PreferenceConfig<T: Equatable>: Hashable {
     public let description: String?
     public let icon: SymbolIcon?
     public let placeholder: String?
+    public let defaultValue: T
     
     
-    public init(key: String, title: String, description: String? = nil, icon: SymbolIcon? = nil, placeholder: String? = nil, binding: Binding<T>) {
+    public init(key: String, title: String, defaultValue: T, description: String? = nil, icon: SymbolIcon? = nil, placeholder: String? = nil, binding: Binding<T>) {
         self.key = key
         self.title = title
+        self.defaultValue = defaultValue
         self.description = description
         self.icon = icon
         self.placeholder = placeholder
