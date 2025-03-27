@@ -99,8 +99,7 @@ public struct AnySettingsElement: SettingsElement {
                 key: key,
                 title: title,
                 defaultValue: defaultValue,
-                icon: icon,
-                binding: .constant(false)
+                icon: icon
             )
         )
         return r.eraseToAnySettingsElement()
@@ -116,8 +115,7 @@ public struct AnySettingsElement: SettingsElement {
                 key: key,
                 title: title,
                 defaultValue: defaultValue,
-                icon: icon,
-                binding: .constant("")
+                icon: icon
             )
         )
         return r.eraseToAnySettingsElement()
@@ -234,21 +232,19 @@ public enum SettingsPreference: SettingsElement {
 public struct PreferenceConfig<T: Equatable>: Hashable {
     public let key: String
     public let title: String
-    public let binding: Binding<T>
     public let description: String?
     public let icon: SymbolIcon?
     public let placeholder: String?
     public let defaultValue: T
     
     
-    public init(key: String, title: String, defaultValue: T, description: String? = nil, icon: SymbolIcon? = nil, placeholder: String? = nil, binding: Binding<T>) {
+    public init(key: String, title: String, defaultValue: T, description: String? = nil, icon: SymbolIcon? = nil, placeholder: String? = nil) {
         self.key = key
         self.title = title
         self.defaultValue = defaultValue
         self.description = description
         self.icon = icon
         self.placeholder = placeholder
-        self.binding = binding
     }
     
     public func hash(into hasher: inout Hasher) {
