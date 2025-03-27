@@ -26,7 +26,8 @@ public struct OnReturnPressModifier: ViewModifier {
         #if os(macOS)
         if #available(macOS 14.0, *), OSEnv.isAtLeast(.sonoma) {
             content
-                .focusable()
+                .focusable(true)
+                .focusEffectDisabled()
                 .onKeyPress(.return) {
                     switch action() {
                     case .handled:
