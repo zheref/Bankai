@@ -15,10 +15,13 @@ public struct TextInput<FocusedField: Hashable>: View {
     var focusedKey: FocusedField?
     let icon: Image?
     let placeholder: String
+    let isDisabled: Bool
     let onSubmit: () -> Void
     let resolveReadyToConfirm: (String) -> Bool
     let ctaTitle: String?
     let theme: StyleTheme
+    
+    @State var isHovered: Bool = false
     
     public init(
         text: Binding<String>,
@@ -26,6 +29,7 @@ public struct TextInput<FocusedField: Hashable>: View {
         focusedKey: FocusedField?,
         icon: Image? = nil,
         placeholder: String = "",
+        isDisabled: Bool = false,
         onSubmit: @escaping () -> Void = { },
         resolveReadyToConfirm: @escaping (String) -> Bool = { _ in true },
         ctaTitle: String? = nil,
@@ -36,6 +40,7 @@ public struct TextInput<FocusedField: Hashable>: View {
         self.focusedKey = focusedKey
         self.icon = icon
         self.placeholder = placeholder
+        self.isDisabled = isDisabled
         self.onSubmit = onSubmit
         self.resolveReadyToConfirm = resolveReadyToConfirm
         self.ctaTitle = ctaTitle
@@ -44,6 +49,14 @@ public struct TextInput<FocusedField: Hashable>: View {
     
     private var isFocused: Bool {
         focusedField.wrappedValue == focusedKey
+    }
+    
+    private var shouldDisplayCTAButton: Bool {
+        if isDisabled {
+            isHovered
+        } else {
+            isFocused && resolveReadyToConfirm(text)
+        }
     }
     
     public var body: some View {
@@ -58,6 +71,7 @@ public struct TextInput<FocusedField: Hashable>: View {
             .focused(focusedField,
                      equals: focusedKey)
             .textFieldStyle(.plain)
+            .disabled(isDisabled)
             .onSubmit(onSubmit)
             .onReturnPress(perform: {
                 onSubmit()
@@ -67,13 +81,16 @@ public struct TextInput<FocusedField: Hashable>: View {
             
             Spacer()
             
-            if let ctaTitle, isFocused, resolveReadyToConfirm(text) {
+            if let ctaTitle, shouldDisplayCTAButton {
                 Button {
                     onSubmit()
                 } label: {
                     Text(ctaTitle)
                 }
             }
+        }
+        .onHover { isHovered in
+            self.isHovered = isHovered
         }
         .padding(10)
         .frame(minHeight: 40)
