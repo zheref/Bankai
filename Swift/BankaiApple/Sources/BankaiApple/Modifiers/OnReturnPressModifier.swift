@@ -15,55 +15,5 @@
 
 import SwiftUI
 
-public enum ReturnPressResolution { case handled, ignored }
-
-@available(macOS 12.0, iOS 17.0, *)
-public struct OnReturnPressModifier: ViewModifier {
-    
-    let action: () -> ReturnPressResolution
-    
-    public func body(content: Content) -> some View {
-        #if os(macOS)
-        if #available(macOS 14.0, *), OSEnv.isAtLeast(.sonoma) {
-            content
-                .focusable(true)
-                .focusEffectDisabled()
-                .onKeyPress(.return) {
-                    switch action() {
-                    case .handled:
-                        return .handled
-                    case .ignored:
-                        return .ignored
-                    }
-                }
-        } else {
-            content
-                .focusable()
-                .onSubmit {
-                    _ = action()
-                }
-        }
-        #else
-        content
-            .focusable()
-            .onKeyPress(.return) {
-                switch action() {
-                case .handled:
-                    return .handled
-                case .ignored:
-                    return .ignored
-                }
-            }
-        #endif
-    }
-    
-}
-
-@available(macOS 12.0, iOS 17.0, *)
-extension View {
-    
-    public func onReturnPress(perform action: @escaping () -> ReturnPressResolution) -> some View {
-        modifier(OnReturnPressModifier(action: action))
-    }
-    
-}
+// Moved to Kro main target
+// OnReturnModifier.swift
