@@ -50,7 +50,7 @@ public struct SettingsCard<Description: View, Content: View>: View {
         .background(theme.colors.background1)
         .cornerRadius(10)
         #else
-        Section {
+        VStack {
             HStack {
                 VStack(alignment: .leading) {
                     if let header {
@@ -64,6 +64,9 @@ public struct SettingsCard<Description: View, Content: View>: View {
                 content
             }
         }
+        .padding(theme.design.padding.big)
+        .background(theme.colors.background3)
+        .cornerRadius(10)
         #endif
     }
     
@@ -95,7 +98,8 @@ public struct SettingsCard<Description: View, Content: View>: View {
 }
 #else
 #Preview("A common settings card") {
-    List {
+    VStack {
+        Spacer()
         SettingsCard(header: "A Simple Header") {
             Text("You should probably tap the action on the right.")
                 .font(.caption)
@@ -103,7 +107,9 @@ public struct SettingsCard<Description: View, Content: View>: View {
             Button("Do this!") {}
                 .buttonStyle(.borderedProminent)
         }
+        Spacer()
     }
+    .padding()
     .background(StyleTheme.cocoa.colors.background1)
 }
 #endif

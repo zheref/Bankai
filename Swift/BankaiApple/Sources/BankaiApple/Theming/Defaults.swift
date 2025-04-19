@@ -33,7 +33,7 @@ extension Palette {
         let border1Color = Color(uiColor: .separator)
         let background2Color = Color(uiColor: .secondarySystemBackground)
         let border2Color = Color(uiColor: .secondarySystemGroupedBackground)
-        let background3Color = Color(uiColor: .tertiarySystemBackground)
+        let background3Color = Color(uiColor: .systemFill)
         let border3Color = Color(uiColor: .tertiarySystemGroupedBackground)
         let absoluteColor = Color(uiColor: .systemFill)
         #endif
