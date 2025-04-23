@@ -10,13 +10,11 @@ import SwiftUI
 struct InnerCapsuleModifier: ViewModifier {
     
     public let cornerRadius: CGFloat
-    public let isFocused: Bool
-    public let theme: StyleTheme
+    public let outlineColor: Color
     
-    public init(cornerRadius: CGFloat, isFocused: Bool, theme: StyleTheme) {
+    public init(cornerRadius: CGFloat, outlineColor: Color) {
         self.cornerRadius = cornerRadius
-        self.isFocused = isFocused
-        self.theme = theme
+        self.outlineColor = outlineColor
     }
     
     public func body(content: Content) -> some View {
@@ -25,7 +23,7 @@ struct InnerCapsuleModifier: ViewModifier {
             .overlay(
                 RoundedRectangle(cornerRadius: 10)
                     .stroke(
-                        isFocused ? theme.colors.accent : theme.colors.background3,
+                        outlineColor,
                         lineWidth: 1
                     )
             )
@@ -35,9 +33,12 @@ struct InnerCapsuleModifier: ViewModifier {
 
 extension View {
     
-    public func bankaiCapsule(cornerRadius: CGFloat = 10, isFocused: Bool = false, theme: StyleTheme = .cocoa) -> some View {
+    public func bankaiCapsule(cornerRadius: CGFloat = 10, outlineColor: Color = .gray) -> some View {
         modifier(
-            InnerCapsuleModifier(cornerRadius: cornerRadius, isFocused: isFocused, theme: theme)
+            InnerCapsuleModifier(
+                cornerRadius: cornerRadius,
+                outlineColor: outlineColor
+            )
         )
     }
 }
@@ -51,6 +52,7 @@ public enum PreviewField {
 #Preview {
     @Previewable @State var someInput: String = ""
     @FocusState var focusedField: PreviewField?
+    let theme: StyleTheme = .cocoa
     
     VStack {
         HStack {
@@ -65,7 +67,10 @@ public enum PreviewField {
         .padding(10)
         .frame(minHeight: 40)
         .background(StyleTheme.cocoa.colors.background2)
-        .bankaiCapsule(isFocused: focusedField == .input)
+        .bankaiCapsule(
+            outlineColor: focusedField == .input ? theme.colors.accent
+                : theme.colors.background3
+        )
     }
     .background(Color.gray)
     .frame(width: 640, height: 480)

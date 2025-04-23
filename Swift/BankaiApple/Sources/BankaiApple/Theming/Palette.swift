@@ -16,6 +16,9 @@ public struct Palette: Sendable, Hashable {
     public let foreground: Color
     public let foreground2: Color
     
+    public let surface: Color
+    public let block: Color
+    
     public let background1: Color
     public let border1: Color
     public let background2: Color
@@ -34,6 +37,8 @@ public struct Palette: Sendable, Hashable {
         accent: Color,
         warning: Color,
         danger: Color,
+        surface: Color,
+        block: Color,
         foreground: Color,
         foreground2: Color,
         background1: Color,
@@ -51,6 +56,8 @@ public struct Palette: Sendable, Hashable {
         self.accent = accent
         self.warning = warning
         self.danger = danger
+        self.surface = surface
+        self.block = block
         self.foreground = foreground
         self.foreground2 = foreground2
         self.background1 = background1
