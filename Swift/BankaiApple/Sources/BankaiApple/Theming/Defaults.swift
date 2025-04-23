@@ -15,7 +15,7 @@ extension Palette {
         let warningColor = Color(.systemYellow)
         let dangerColor = Color(.systemRed)
         let surfaceColor = Color(.controlBackgroundColor)
-        let blockColor = Color(.systemFill)
+        let blockColor = Color(.textBackgroundColor)
         let foregroundColor = Color(.labelColor)
         let foreground2Color = Color(.secondaryLabelColor)
         let background1Color = Color(.windowBackgroundColor)
